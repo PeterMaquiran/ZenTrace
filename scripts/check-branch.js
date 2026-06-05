@@ -20,13 +20,13 @@ if (!pattern.test(branch)) {
   console.log('  fix/ui/button')
   console.log('  chore/ci/lint')
 
-  //process.exit(1)
+  process.exit(1)
 }
 
 if (!validTypes.includes(type)) {
   console.log('\n❌ Invalid type:', type)
   console.log('Allowed types:', validTypes.join(', '))
-  //process.exit(1)
+  process.exit(1)
 }
 
 console.log('✅ Branch name OK:', branch)

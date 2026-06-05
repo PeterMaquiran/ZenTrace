@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    // 👇 only app-safe types
+    "types": []
+  },
+  "include": ["src"],
+  "exclude": ["cypress", "**/*.test.ts", "**/*.spec.ts"]
+}

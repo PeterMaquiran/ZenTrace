@@ -1,0 +1,7 @@
+node_modules
+_src
+playground/dist
+dist
+screenshots
+.DS_Store
+.env.local

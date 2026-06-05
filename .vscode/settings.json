@@ -1,0 +1,28 @@
+{
+  // Auto save (lightweight)
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 800,
+
+  // Only formatting on save (VERY fast)
+
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // ❌ Disable ESLint fixes on save (prevents lag)
+  "editor.codeActionsOnSave": {},
+
+  // ESLint still runs in background (no blocking)
+  "eslint.validate": ["javascript", "typescript"],
+  "eslint.experimental.useFlatConfig": true,
+
+  // Reduce noise / improve performance
+  "eslint.run": "onType", // feedback while typing (lighter than onSave fixes)
+  "editor.codeActionsOnSaveTimeout": 1000,
+
+  // Optional: reduce file watching overhead in big projects
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/.git/**": true
+  }
+}

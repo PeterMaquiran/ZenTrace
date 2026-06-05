@@ -149,7 +149,7 @@ Trace failing tests and inspect inputs.
 
 ## 🧩 Advanced
 
-### Context propagation
+### 🔗 Context propagation
 
 DevTrace automatically links function calls into a single trace:
 
@@ -167,7 +167,31 @@ async function B() {}
 
 ---
 
-### Argument control
+### 🧠 Manual trace propagation
+
+For advanced use cases (APIs, services, boundaries), you can explicitly pass the trace context:
+
+```ts
+@trace()
+async function A(traceCtx?: TraceContext) {
+  await B(traceCtx)
+}
+
+@trace()
+async function B(traceCtx?: TraceContext) {}
+```
+
+#### ⚙️ How it works
+
+- DevTrace injects the current `traceCtx` as the **last argument**
+- If a context is already provided, it is reused
+- All calls remain part of the **same trace tree**
+
+👉 This enables **cross-layer and cross-service tracing**
+
+---
+
+### 🧪 Argument control
 
 ```ts
 @trace({ logArgs: true })

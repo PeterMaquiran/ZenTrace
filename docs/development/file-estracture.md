@@ -6,11 +6,11 @@ devtrace/
 │
 │ # 🧠 Core (engine — no external deps mindset)
 │ ├── core/
-│ │ ├── tracer.ts # main Tracer class (startSpan, endSpan)
-│ │ ├── span.ts # Span implementation
-│ │ ├── context.ts # TraceContext + helpers
-│ │ ├── trace.ts # Trace tree model (optional)
-│ │ └── types.ts # SpanData (normalized format)
+│ │ ├── tracer.ts
+│ │ ├── span.ts
+│ │ ├── context.ts
+│ │ ├── trace.ts
+│ │ └── types.ts
 │
 │ # 🔗 Propagation
 │ ├── propagation/
@@ -29,7 +29,6 @@ devtrace/
 │ │ ├── zipkin/
 │ │ │ ├── zipkin.exporter.ts
 │ │ │ └── zipkin.transformer.ts
-│ │ │
 │ │ ├── otel/
 │ │ │ ├── otel.exporter.ts
 │ │ │ └── otel.transformer.ts
@@ -65,8 +64,3 @@ devtrace/
 │ ├── testing/
 │ │ └── mock-exporter.ts
 │
-└── examples/
-├── basic/
-├── express/
-├── nextjs/
-└── manual-propagation/

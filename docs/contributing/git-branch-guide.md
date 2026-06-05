@@ -7,33 +7,27 @@ This project uses a **strict branch naming convention** to keep work organized a
 ## Format
 
 ```bash id="b1"
-<type>/<scope>-<short-name>
+<type>/<scope>/<short-name>
 ```
 
-- `type` → max 10 chars
-- `short-name` → max 20 chars, kebab-case
-- all lowercase only
+<type>/<scope>/<short-name>
+
+- type → max 10 chars
+- scope → max 10 chars
+- short-name → max 20 chars, kebab-case
+- lowercase only
 
 ---
 
 ## Examples
 
 ```bash id="b2"
-feat/auth-login
-fix/ui-button
-chore/setup-husky
-refactor/core-logic
-test/api-users
-docs/git-guide
-```
-
-With scope:
-
-```bash id="b3"
-feat/api/login
-fix/ui/overflow
-chore/ci/lint-rules
-refactor/engine/-query
+feat/auth/login
+fix/ui/button-crash
+chore/dev/setup-husky
+refactor/core/query-engine
+test/api/user-sync
+docs/git/branch-guide
 ```
 
 ---
@@ -45,7 +39,7 @@ refactor/engine/-query
 New feature branch
 
 ```bash id="b4"
-feat/auth-login
+feat/auth/login
 ```
 
 ### fix
@@ -53,7 +47,7 @@ feat/auth-login
 Bug fix branch
 
 ```bash id="b5"
-fix/ui-crash
+fix/ui/crash
 ```
 
 ### chore
@@ -61,7 +55,7 @@ fix/ui-crash
 Maintenance / tooling
 
 ```bash id="b6"
-chore/setup-eslint
+chore/setup/eslint
 ```
 
 ### refactor
@@ -69,7 +63,7 @@ chore/setup-eslint
 Code restructuring
 
 ```bash id="b7"
-refactor/core-query
+refactor/core/query
 ```
 
 ### test
@@ -77,7 +71,7 @@ refactor/core-query
 Testing work
 
 ```bash id="b8"
-test/api-sync
+test/api/sync
 ```
 
 ### docs
@@ -85,7 +79,7 @@ test/api-sync
 Documentation only
 
 ```bash id="b9"
-docs/commit-guide
+docs/commit/guide
 ```
 
 ---

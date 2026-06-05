@@ -3,7 +3,7 @@ import { execSync } from 'child_process'
 const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
 
 // Format: type/scope/short-name
-const pattern = /^[a-z]{2,10}\/[a-z0-9-]{1,10}\/[a-z0-9-]{1,20}$/
+const pattern = /^[a-z]{2,10}\/[a-z0-9-]{1,20}\/[a-z0-9-]{1,20}$/
 
 const validTypes = ['feat', 'fix', 'chore', 'refactor', 'test', 'docs']
 

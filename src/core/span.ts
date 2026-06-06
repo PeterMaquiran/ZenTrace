@@ -7,12 +7,12 @@ export class Span {
 
   public attributes: Record<string, string> = {}
   public events: Array<{ timestamp: number; value: string }> = []
+  public children: Span[] = []
 
   constructor(
     public name: string,
     public serviceName: string,
     public context: TraceContext,
-    private exporter: any,
   ) {
     this.startTime = Date.now() * 1000
   }
@@ -33,10 +33,10 @@ export class Span {
 
     const childContext = TraceContext.child(this.context, spanId)
 
-    const span = new Span(name, this.serviceName, childContext, this.exporter)
+    const span = new Span(name, this.serviceName, childContext)
 
+    this.children.push(span)
     if (module) span.addAttribute('module', module)
-
     return span
   }
 
@@ -49,10 +49,6 @@ export class Span {
 
   async end() {
     this.endTime = Date.now() * 1000
-
-    const duration = this.endTime - this.startTime
-
-    await this.exporter.export(this.toJSON(duration))
   }
 
   toJSON(duration?: number): SpanData {

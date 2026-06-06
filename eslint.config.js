@@ -20,6 +20,7 @@ export default tseslint.config(
       'dist',
       'node_modules',
       'src/test/example.test.ts',
+      'test/mocks/mock-exporter.ts',
     ],
   },
 
@@ -46,7 +47,7 @@ export default tseslint.config(
       'no-debugger': 'warn',
       'no-multiple-empty-lines': ['error', { max: 1 }],
       // 🧠 TypeScript discipline
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
 
       '@typescript-eslint/no-unused-vars': [

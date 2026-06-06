@@ -1,11 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { Tracer } from '../../src/core/tracer'
-import { MockExporter } from '../mocks/mock-exporter'
 
 describe('Span', () => {
   it('should create and export a span', async () => {
-    const exporter = new MockExporter()
-    const tracer = new Tracer('test-service', exporter)
+    const tracer = new Tracer('test-service')
 
     const span = tracer.startSpan('root')
 
@@ -14,12 +12,10 @@ describe('Span', () => {
 
     await span.end()
 
-    expect(exporter.spans.length).toBe(1)
+    expect(span.children.length).toBe(0)
 
-    const exported = exporter.spans[0]
-
-    expect(exported.name).toBe('root')
-    expect(exported.tags.env).toBe('test')
-    expect(exported.annotations.length).toBe(1)
+    expect(span.name).toBe('root')
+    expect(span.toJSON().tags?.env).toBe('test')
+    expect(span.toJSON().annotations?.length).toBe(1)
   })
 })

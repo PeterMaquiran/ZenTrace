@@ -1,7 +1,6 @@
 import type { Span } from '../core/span'
+import { Tracer } from '../core/tracer'
 import { SpanStorage } from '../storage/memory-storage'
-
-import { Tracer } from '@/core/tracer'
 
 type TraceOptions = {
   module?: string

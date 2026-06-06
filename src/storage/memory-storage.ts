@@ -1,4 +1,4 @@
-import type { Span } from '@/core/span'
+import type { Span } from '../core/span'
 
 export class SpanStorage {
   private static spans: Span[] = []

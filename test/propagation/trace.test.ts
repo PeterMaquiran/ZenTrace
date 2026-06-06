@@ -1,32 +1,32 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { trace } from '../../src/decorator/index'
-import { Span } from '@/core/span'
-import { Tracer } from '@/core/tracer'
+import { Span } from '../../src/core/span'
 
 // --- TEST CLASS ---
 class TestService {
   @trace({ captureArgs: true, captureResult: true })
-  async success(a: any, b: any, trace?: any) {
-    return this.success1(a, b, trace)
+  async success(a: any, b: any, _trace?: any) {
+    return this.success1(a, b, _trace)
   }
 
   @trace({ captureArgs: true, captureResult: true })
-  async success1(a: any, b: any, trace?: any) {
+  async success1(a: any, b: any, _trace?: any) {
+    console.log(_trace)
     return a + b
   }
 
   @trace({ captureArgs: true, captureResult: true, ...{ span: true } })
-  async returnSpan(a: any, b: any, trace?: any): Promise<Span> {
+  async returnSpan(a: any, b: any): Promise<Span> {
     return (a + b) as any
   }
 
   @trace({ captureArgs: true, captureResult: true })
-  async span(a: any, b: any, trace?: any) {
+  async span(a: any, b: any) {
     return a + b
   }
 
   @trace({ captureArgs: true })
-  async fail(_a: any, trace?: any) {
+  async fail() {
     throw new Error('boom')
   }
 }

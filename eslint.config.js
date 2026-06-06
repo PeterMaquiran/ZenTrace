@@ -19,7 +19,7 @@ export default tseslint.config(
       '**/*.cjs',
       'dist',
       'node_modules',
-      'src/test/example.test.ts',
+      'test/example.test.ts',
       'test/mocks/mock-exporter.ts',
     ],
   },

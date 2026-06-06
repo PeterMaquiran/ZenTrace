@@ -5,7 +5,8 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "lib": ["DOM", "ES2022"],
-
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

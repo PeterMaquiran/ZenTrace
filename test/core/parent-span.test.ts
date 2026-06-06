@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
-import { Tracer } from '../src/core/tracer'
+import { Tracer } from '../../src/core/tracer'
 
-describe('Tracer Runtime', () => {
+describe('Parent span', () => {
   it('builds nested trace tree', async () => {
     const tracer = new Tracer('test-service')
 

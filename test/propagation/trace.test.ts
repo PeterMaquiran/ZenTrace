@@ -5,13 +5,13 @@ import { Span } from '../../src/core/span'
 // --- TEST CLASS ---
 class TestService {
   @trace({ captureArgs: true, captureResult: true })
-  async success(a: any, b: any, _trace?: any) {
-    return this.success1(a, b, _trace)
+  async success(a: any, b: any, _span?: Span) {
+    return this.success1(a, b, _span)
   }
 
   @trace({ captureArgs: true, captureResult: true })
-  async success1(a: any, b: any, _trace?: any) {
-    console.log(_trace)
+  async success1(a: any, b: any, _span?: Span) {
+    console.log(_span?.context.spanId)
     return a + b
   }
 

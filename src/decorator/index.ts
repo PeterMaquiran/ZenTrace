@@ -19,7 +19,7 @@ export function trace(options: TraceOptions = {}) {
     descriptor.value = async function (...args: any[]) {
       const lartArg = args[args.length - 1]
 
-      const parentSpan: Span | undefined = lartArg?.span
+      const parentSpan: Span | undefined = lartArg?.context.traceId
 
       const span: Span =
         parentSpan?.child(propertyKey, options.module) ||
@@ -34,7 +34,7 @@ export function trace(options: TraceOptions = {}) {
         }
       }
 
-      args.push({ span })
+      args.push(span)
       SpanStorage.add(span)
 
       const start = performance.now()

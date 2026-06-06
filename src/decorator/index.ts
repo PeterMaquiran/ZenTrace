@@ -1,4 +1,7 @@
 import type { Span } from '../core/span'
+import { SpanStorage } from '../storage/memory-storage'
+
+import { Tracer } from '@/core/tracer'
 
 type TraceOptions = {
   module?: string
@@ -15,29 +18,25 @@ export function trace(options: TraceOptions = {}) {
     const original = descriptor.value
 
     descriptor.value = async function (...args: any[]) {
-      const __trace = args[args.length - 1]
+      const lartArg = args[args.length - 1]
 
-      const parentSpan: Span | undefined = __trace?.span
+      const parentSpan: Span | undefined = lartArg?.span
 
       const span: Span =
         parentSpan?.child(propertyKey, options.module) ||
-        (this as any).__tracer?.startSpan(
-          propertyKey,
-          undefined,
-          options.module,
-        )
-
-      // inject trace into last arg (propagation)
-      args[args.length - 1] = {
-        ...(__trace || {}),
-        span,
-        context: span.context,
-      }
+        new Tracer('').startSpan(propertyKey, undefined, options.module)
 
       // INPUT CAPTURE
       if (options.captureArgs) {
-        span.addAttribute('input', safeSerialize(args.slice(0, -1)))
+        if (parentSpan) {
+          span.addAttribute('input', safeSerialize(args.slice(0, -1)))
+        } else {
+          span.addAttribute('input', safeSerialize(args))
+        }
       }
+
+      args.push({ span })
+      SpanStorage.add(span)
 
       const start = performance.now()
 
@@ -54,6 +53,11 @@ export function trace(options: TraceOptions = {}) {
         }
 
         await span.end()
+
+        // only used in testing
+        if ((options as any).span) {
+          return span
+        }
 
         return result
       } catch (err: any) {

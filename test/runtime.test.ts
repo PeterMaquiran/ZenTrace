@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { Tracer } from '../core/tracer'
+import { Tracer } from '../src/core/tracer'
 
 describe('Tracer Runtime', () => {
   it('builds nested trace tree', async () => {

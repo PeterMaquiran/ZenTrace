@@ -1,6 +1,7 @@
 import { TraceContext } from '../core/context'
 
 export function extract(headers: any) {
+  // @typescript-eslint/no-explicit-any
   if (!headers) return null
 
   const traceId = headers['x-trace-id']

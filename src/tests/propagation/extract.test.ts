@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { extract } from '../../src/util/extract'
+
+import { extract } from '../../util/extract'
 
 describe('Extract context', () => {
   it('should extract valid trace context', () => {

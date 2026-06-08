@@ -1,0 +1,78 @@
+.inspector-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  background: var(--bg-popup, #14161d);
+  border-left: 1px solid var(--border-subtle, #252833);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+}
+
+.inspector-drawer *,
+.inspector-drawer *::before,
+.inspector-drawer *::after {
+  box-sizing: border-box;
+}
+
+.inspector-drawer.is-visible {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle, #252833);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-title-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tree-node-badge {
+  width: 13px;
+  height: 13px;
+  border-radius: 20%;
+  display: inline-block;
+}
+
+.drawer-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  font-family: monospace;
+}
+
+.close-drawer-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #8a90a6);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.close-drawer-btn:hover {
+  color: var(--text-primary, #ffffff);
+}
+
+.drawer-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

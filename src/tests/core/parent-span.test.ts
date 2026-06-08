@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { Tracer } from '../../src/core/tracer'
+import { Tracer } from '../../core/tracer'
 
 describe('Parent span', () => {
   it('builds nested trace tree', async () => {

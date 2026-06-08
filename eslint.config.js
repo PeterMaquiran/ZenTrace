@@ -19,7 +19,7 @@ export default tseslint.config(
       '**/*.cjs',
       'dist',
       'node_modules',
-      'test/example.test.ts',
+      'src/tests/example.test.ts',
       'test/mocks/mock-exporter.ts',
     ],
   },
@@ -28,7 +28,7 @@ export default tseslint.config(
   {
     files: [
       'src/**/*.{ts,tsx}',
-      'playground/**/*.{ts,tsx}',
+      'ui/**/*.{ts,tsx}',
       'cypress/**/*.ts',
       //'**/**.json',
     ],

@@ -1,7 +1,18 @@
 node_modules
 _src
-playground/dist
+ui/dist
 dist
+extension/content.js
+extension/content.js.map
+extension/assets/
 screenshots
 .DS_Store
 .env.local
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+user-data

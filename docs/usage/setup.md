@@ -63,7 +63,7 @@ pnpm dev
 
 This will:
 
-- Start Vite playground
+- Start Vite UI dev server (`ui/`)
 - Open Cypress test runner
 - Watch for file changes
 

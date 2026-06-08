@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { Tracer } from '../../src/core/tracer'
+
+import { Tracer } from '../../core/tracer'
 
 describe('Child Span', () => {
   it('should propagate trace context', async () => {

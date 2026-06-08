@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { trace } from '../../src/decorator/index'
-import { Span } from '../../src/core/span'
+
+import type { Span } from '../../core/span'
+import { trace } from '../../decorator/index'
 
 // --- TEST CLASS ---
 class TestService {

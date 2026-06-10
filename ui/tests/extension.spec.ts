@@ -64,4 +64,25 @@ test.describe('DevTrace Chrome extension', () => {
       await context.close()
     }
   })
+
+  test('interacting with the inspector drawer', async () => {
+    const context = await launchExtensionContext()
+
+    try {
+      const extensionId = await getExtensionId(context)
+      const page = await openPanel(context, extensionId)
+
+      await page.locator('.tree-row', { hasText: 'frontend' }).first().click()
+
+      await page.locator('.tree-row', { hasText: 'frontend' }).first().click()
+
+      await page.waitForTimeout(100000) // pause here
+
+      await expect(
+        page.getByRole('heading', { name: 'Execution Overview' }).first(),
+      ).toBeVisible()
+    } finally {
+      await context.close()
+    }
+  })
 })

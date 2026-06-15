@@ -69,6 +69,14 @@ export default tseslint.config(
     },
   },
 
+  // Demo app: @trace injects parentSpan at runtime; params are required for nesting
+  {
+    files: ['ui/demo/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+
   // Tests relaxed
   {
     files: ['**/*.test.ts', 'cypress/**/*.ts'],

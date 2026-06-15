@@ -1,104 +1,40 @@
+import { runSpan, type RunSpanOptions } from '../core/run-span'
 import type { Span } from '../core/span'
-import { Tracer } from '../core/tracer'
-import { emitTrace } from '../exporters/browser/browser-export'
-import { SpanStorage } from '../storage/memory-storage'
 
 type TraceOptions = {
   module?: string
   captureArgs?: boolean
   captureResult?: boolean
+  /** @internal test helper — returns the span instead of the method result */
+  span?: boolean
 }
 
 export function trace(options: TraceOptions = {}) {
   return function (
-    _target: any,
+    target: object,
     propertyKey: string,
     descriptor: PropertyDescriptor,
   ) {
-    const original = descriptor.value
+    const original = descriptor.value as (
+      ...args: unknown[]
+    ) => Promise<unknown>
+    const className =
+      (target as { constructor?: { name?: string } }).constructor?.name ??
+      'Anonymous'
+    const marker = `${className}.${propertyKey}`
 
-    descriptor.value = async function (...args: any[]) {
-      const lastArg = args[args.length - 1]
-
-      const parentSpan: Span | undefined = lastArg?.context?.traceId
-        ? (lastArg as Span)
-        : undefined
-
-      const span: Span =
-        parentSpan?.child(propertyKey, options.module) ||
-        new Tracer('').startSpan(propertyKey, undefined, options.module)
-
-      // INPUT CAPTURE
-      if (options.captureArgs) {
-        if (parentSpan) {
-          span.addAttribute('input', safeSerialize(args.slice(0, -1)))
-        } else {
-          span.addAttribute('input', safeSerialize(args))
-        }
-      }
-
-      args.push(span)
-      SpanStorage.add(span)
-
-      const start = performance.now()
-
-      try {
-        const result = await original.apply(this, args)
-
-        const duration = performance.now() - start
-
-        span.addAttribute('duration_ms', String(duration))
-
-        // OUTPUT CAPTURE
-        if (options.captureResult) {
-          span.addAttribute('output', safeSerialize(result))
-        }
-
-        await span.end()
-
-        if (typeof window !== 'undefined') {
-          emitTrace(span.toJSON(duration * 1000))
-        }
-
-        // only used in testing
-        if ((options as any).span) {
-          return span
-        }
-
-        return result
-      } catch (err: any) {
-        span.recordError(err)
-        const duration = performance.now() - start
-        await span.end()
-
-        if (typeof window !== 'undefined') {
-          emitTrace(span.toJSON(duration * 1000))
-        }
-
-        throw err
-      }
+    descriptor.value = async function (...args: unknown[]) {
+      return runSpan(propertyKey, async () => original.apply(this, args), {
+        module: options.module,
+        captureArgs: options.captureArgs ? args : undefined,
+        captureResult: options.captureResult,
+        returnSpan: options.span,
+        marker,
+      } satisfies RunSpanOptions)
     }
 
     return descriptor
   }
 }
 
-function safeSerialize(value: any) {
-  try {
-    return JSON.stringify(value, getCircularReplacer())
-  } catch {
-    return '[unserializable]'
-  }
-}
-
-function getCircularReplacer() {
-  const seen = new WeakSet()
-
-  return (_key: string, value: any) => {
-    if (typeof value === 'object' && value !== null) {
-      if (seen.has(value)) return '[Circular]'
-      seen.add(value)
-    }
-    return value
-  }
-}
+export type { Span }

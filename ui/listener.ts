@@ -2,6 +2,8 @@ import type { SpanData } from '../src/core/types'
 
 type TraceListener = (data: SpanData) => void
 
+const originalsConsoleError = console.error.bind(console)
+
 class TraceBus {
   private listeners: Set<TraceListener> = new Set()
 
@@ -18,8 +20,8 @@ class TraceBus {
     for (const listener of this.listeners) {
       try {
         listener(data)
-      } catch (err) {
-        console.error('Trace listener error:', err)
+      } catch {
+        originalsConsoleError('Trace listener error')
       }
     }
   }

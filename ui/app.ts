@@ -1,5 +1,7 @@
-import type { Span } from '../src/core/span'
-import { trace } from '../src/decorator/index'
+import { enableAutoTracing, trace } from '../src/index'
+
+enableAutoTracing({ logs: true, http: true })
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
@@ -10,10 +12,9 @@ class CheckoutService {
     captureArgs: true,
     captureResult: true,
   })
-  async runCheckout(orderId: string, ...args: unknown[]) {
-    const parentSpan = args[args.length - 1] as Span
-    const user = await this.authenticate('demo-token', parentSpan)
-    return this.charge(orderId, user.userId, parentSpan)
+  async runCheckout(orderId: string) {
+    const user = await this.authenticate('demo-token')
+    return this.charge(orderId, user.userId)
   }
 
   @trace({
@@ -21,9 +22,9 @@ class CheckoutService {
     captureArgs: true,
     captureResult: true,
   })
-  async authenticate(token: string, parentSpan?: Span) {
-    void parentSpan
+  async authenticate(token: string) {
     await sleep(120)
+    console.log('authenticated', token)
     return { userId: 'usr_demo', tokenType: 'Bearer' }
   }
 
@@ -32,8 +33,7 @@ class CheckoutService {
     captureArgs: true,
     captureResult: true,
   })
-  async charge(orderId: string, userId: string, parentSpan?: Span) {
-    void parentSpan
+  async charge(orderId: string, userId: string) {
     await sleep(180)
     return {
       orderId,

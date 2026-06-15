@@ -69,7 +69,7 @@ export default tseslint.config(
     },
   },
 
-  // Demo app: @trace injects parentSpan at runtime; params are required for nesting
+  // Demo app uses automatic @trace propagation via stack context
   {
     files: ['ui/demo/**/*.{ts,tsx}'],
     rules: {

@@ -79,6 +79,109 @@
   color: #a6accd;
 }
 
+/* Collapsible JSON viewer */
+.json-viewer {
+  background: #090a0d;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 10px 10px 10px 6px;
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+  font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.json-viewer-raw {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #c3cadf;
+}
+
+.json-block {
+  display: block;
+}
+
+.json-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+  padding-left: calc(var(--json-depth, 0) * 14px + 4px);
+  min-height: 18px;
+}
+
+.json-line-toggle {
+  align-items: center;
+}
+
+.json-toggle {
+  width: 16px;
+  height: 16px;
+  margin: 0 2px 0 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #8a90a6;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.json-toggle:hover {
+  color: #00d4ff;
+}
+
+.json-key,
+.json-ident {
+  color: #82aaff;
+}
+
+.json-plain {
+  color: #c3cadf;
+}
+
+.json-string {
+  color: #c3e88d;
+  word-break: break-word;
+}
+
+.json-number {
+  color: #f78c6c;
+}
+
+.json-boolean {
+  color: #ffcb6b;
+}
+
+.json-null {
+  color: #8a90a6;
+  font-style: italic;
+}
+
+.json-punct {
+  color: #6b7289;
+}
+
+.json-preview {
+  margin-left: 6px;
+  color: #6b7289;
+  font-style: italic;
+  font-size: 10px;
+}
+
+.drawer-log-json {
+  margin-top: 4px;
+}
+
+.drawer-log-json .json-viewer {
+  max-height: 160px;
+  padding: 8px;
+  font-size: 10px;
+}
+
 /* Timeline Milestones list entries style */
 .drawer-events-list {
   display: flex;

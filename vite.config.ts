@@ -14,7 +14,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node', // or 'jsdom' if testing UI
-    include: ['src/tests/**.test.ts'], // ✅ only unit tests
+    include: ['src/tests/**/*.test.ts'],
     //exclude: ['tests/**', 'e2e/**'], // ❌ ignore playwright
   },
   plugins: [preact()],

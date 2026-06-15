@@ -1,3 +1,18 @@
+export type LogLevel = 'log' | 'info' | 'warn' | 'error'
+
+export interface TraceLog {
+  level: LogLevel
+  message: string
+  timestampMs: number
+}
+
+export interface TraceHttp {
+  method: string
+  url: string
+  status?: number
+  statusText?: string
+}
+
 export interface TraceEvent {
   name: string
   timestampMs: number
@@ -5,12 +20,17 @@ export interface TraceEvent {
 
 export interface TraceNode {
   name: string
+  spanId?: string
   startMs: number
   durationMs: number
   colorHex: string
   input?: string
   output?: string
   events?: TraceEvent[]
+  logs?: TraceLog[]
+  http?: TraceHttp
+  module?: string
+  isHttp?: boolean
   children: TraceNode[]
 }
 

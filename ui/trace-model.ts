@@ -1,5 +1,6 @@
 import type { SpanData } from '../src/core/types'
 
+import { extractHttp, extractLogs } from './span-details'
 import type { TraceEvent, TraceNode, TraceViewData } from './types'
 
 export type { TraceViewData }
@@ -9,11 +10,21 @@ const MODULE_COLORS: Record<string, string> = {
   payment: '#f44336',
   frontend: '#4caf50',
   demo: '#0084ff',
+  http: '#7c4dff',
+  checkout: '#00bcd4',
+  pricing: '#ff9800',
+  inventory: '#8bc34a',
+  fraud: '#e91e63',
+  gateway: '#9c27b0',
+  notification: '#607d8b',
 }
 
 function colorForSpan(span: SpanData): string {
   const module = span.tags?.module
   if (module && MODULE_COLORS[module]) return MODULE_COLORS[module]
+  if (span.tags?.component === 'http' || span.name.startsWith('HTTP ')) {
+    return MODULE_COLORS.http
+  }
   return hashColor(span.name)
 }
 
@@ -43,19 +54,35 @@ function buildNode(
     ? toMs(span.duration)
     : Number(span.tags?.duration_ms ?? 0)
 
+  const http = extractHttp(span)
+  const logs = extractLogs(span, traceStartUs)
+
+  const events = span.annotations
+    ?.filter(
+      (annotation) =>
+        typeof annotation.value === 'string' &&
+        !annotation.value.match(/^\[(log|info|warn|error)\]/),
+    )
+    .map(
+      (annotation): TraceEvent => ({
+        name: annotation.value,
+        timestampMs: toMs(annotation.timestamp - traceStartUs),
+      }),
+    )
+
   return {
     name: span.name,
+    spanId: span.id,
     startMs: toMs(span.timestamp - traceStartUs),
     durationMs: Math.max(durationMs, 1),
     colorHex: colorForSpan(span),
     input: span.tags?.input,
     output: span.tags?.output,
-    events: span.annotations?.map(
-      (annotation): TraceEvent => ({
-        name: annotation.value,
-        timestampMs: toMs(annotation.timestamp - traceStartUs),
-      }),
-    ),
+    events,
+    logs: logs.length > 0 ? logs : undefined,
+    http,
+    module: span.tags?.module,
+    isHttp: Boolean(http),
     children,
   }
 }
@@ -98,4 +125,20 @@ export function buildTraceView(spans: SpanData[]): TraceViewData | null {
       children: rootNodes,
     },
   }
+}
+
+export function countTraceSignals(root: TraceNode): {
+  logs: number
+  http: number
+} {
+  let logs = root.logs?.length ?? 0
+  let http = root.isHttp ? 1 : 0
+
+  for (const child of root.children) {
+    const nested = countTraceSignals(child)
+    logs += nested.logs
+    http += nested.http
+  }
+
+  return { logs, http }
 }

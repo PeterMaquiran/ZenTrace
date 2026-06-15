@@ -20,7 +20,6 @@ function PremiumTraceGantt() {
   useEffect(() => {
     return window.__TRACE__.subscribe((span) => {
       setLiveSpans((current) => {
-        console.log('received trace:', span)
         const next = [...current]
         const index = next.findIndex((item) => item.id === span.id)
         if (index === -1) next.push(span)

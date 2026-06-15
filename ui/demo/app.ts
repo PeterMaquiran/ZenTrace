@@ -1,5 +1,6 @@
-import type { Span } from '../../src/core/span'
-import { trace } from '../../src/decorator/index'
+import { enableAutoTracing, trace } from '../../src/index'
+
+enableAutoTracing({ logs: true, http: true })
 
 /**
  * -------------------------
@@ -25,8 +26,10 @@ function randomFail(probability = 0.2) {
 
 class AuthService {
   @trace({ module: 'auth', captureArgs: true, captureResult: true })
-  async validateToken(token: string, parentSpan?: Span) {
+  async validateToken(token: string) {
+    console.log('validating token', token)
     await sleep(80)
+    console.info('token validated', token)
     return {
       userId: 'user_123',
       roles: ['USER'],
@@ -36,8 +39,9 @@ class AuthService {
 
 class PricingService {
   @trace({ module: 'pricing', captureArgs: true, captureResult: true })
-  async calculatePrice(orderId: string, parentSpan?: Span) {
+  async calculatePrice(orderId: string) {
     await sleep(120)
+    console.log('price calculated for', orderId)
 
     const base = 100
     const tax = base * 0.23
@@ -52,7 +56,7 @@ class PricingService {
 
 class InventoryService {
   @trace({ module: 'inventory', captureArgs: true, captureResult: true })
-  async reserveStock(orderId: string, parentSpan?: Span) {
+  async reserveStock(orderId: string) {
     await sleep(150)
 
     randomFail(0.1)
@@ -67,9 +71,9 @@ class InventoryService {
 
 class PaymentService {
   @trace({ module: 'payment', captureArgs: true, captureResult: true })
-  async charge(amount: number, userId: string, parentSpan?: Span) {
-    const fraud = await this.fraudCheck(userId, parentSpan)
-    const gateway = await this.processGateway(amount, parentSpan)
+  async charge(amount: number, userId: string) {
+    const fraud = await this.fraudCheck(userId)
+    const gateway = await this.processGateway(amount)
 
     return {
       status: 'success',
@@ -79,13 +83,13 @@ class PaymentService {
   }
 
   @trace({ module: 'fraud', captureArgs: true })
-  async fraudCheck(userId: string, parentSpan?: Span) {
+  async fraudCheck(userId: string) {
     await sleep(60)
     return { userId, risk: 'low' }
   }
 
   @trace({ module: 'gateway', captureArgs: true })
-  async processGateway(amount: number, parentSpan?: Span) {
+  async processGateway(amount: number) {
     return this.retry(async () => {
       await sleep(100)
       randomFail(0.3)
@@ -99,7 +103,7 @@ class PaymentService {
   }
 
   private async retry<T>(fn: () => Promise<T>, retries: number): Promise<T> {
-    let lastError: any
+    let lastError: unknown
 
     for (let i = 0; i < retries; i++) {
       try {
@@ -116,7 +120,7 @@ class PaymentService {
 
 class NotificationService {
   @trace({ module: 'notification' })
-  async sendConfirmation(userId: string, parentSpan?: Span) {
+  async sendConfirmation(userId: string) {
     await sleep(40)
     return {
       sent: true,
@@ -142,27 +146,24 @@ class CheckoutService {
   ) {}
 
   @trace({ module: 'checkout', captureArgs: true, captureResult: true })
-  async runCheckout(orderId: string, parentSpan?: Span) {
+  async runCheckout(orderId: string) {
     const token = 'demo-token'
+    console.info('checkout started', orderId)
 
-    // Auth
-    const user = await this.auth.validateToken(token, parentSpan)
+    const user = await this.auth.validateToken(token)
 
-    // Parallel work
+    await fetch('https://jsonplaceholder.typicode.com/todos/1')
+
     const [price, stock] = await Promise.all([
-      this.pricing.calculatePrice(orderId, parentSpan),
-      this.inventory.reserveStock(orderId, parentSpan),
+      this.pricing.calculatePrice(orderId),
+      this.inventory.reserveStock(orderId),
     ])
 
-    // Payment
-    const payment = await this.payment.charge(
-      price.total,
-      user.userId,
-      parentSpan,
-    )
+    const payment = await this.payment.charge(price.total, user.userId)
 
-    // Fire and forget
-    void this.notification.sendConfirmation(user.userId, parentSpan)
+    console.log('checkout completed', { orderId, total: price.total })
+
+    void this.notification.sendConfirmation(user.userId)
 
     return {
       orderId,

@@ -1,5 +1,6 @@
 import type { Span } from '../core/span'
 import { Tracer } from '../core/tracer'
+import { emitTrace } from '../exporters/browser/browser-export'
 import { SpanStorage } from '../storage/memory-storage'
 
 type TraceOptions = {
@@ -17,9 +18,11 @@ export function trace(options: TraceOptions = {}) {
     const original = descriptor.value
 
     descriptor.value = async function (...args: any[]) {
-      const lartArg = args[args.length - 1]
+      const lastArg = args[args.length - 1]
 
-      const parentSpan: Span | undefined = lartArg?.context.traceId
+      const parentSpan: Span | undefined = lastArg?.context?.traceId
+        ? (lastArg as Span)
+        : undefined
 
       const span: Span =
         parentSpan?.child(propertyKey, options.module) ||
@@ -53,6 +56,10 @@ export function trace(options: TraceOptions = {}) {
 
         await span.end()
 
+        if (typeof window !== 'undefined') {
+          emitTrace(span.toJSON(duration * 1000))
+        }
+
         // only used in testing
         if ((options as any).span) {
           return span
@@ -61,7 +68,13 @@ export function trace(options: TraceOptions = {}) {
         return result
       } catch (err: any) {
         span.recordError(err)
+        const duration = performance.now() - start
         await span.end()
+
+        if (typeof window !== 'undefined') {
+          emitTrace(span.toJSON(duration * 1000))
+        }
+
         throw err
       }
     }

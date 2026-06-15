@@ -76,3 +76,14 @@
   flex-direction: column;
   gap: 20px;
 }
+
+.live-trace-banner {
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(0, 132, 255, 0.12);
+  border: 1px solid rgba(0, 132, 255, 0.35);
+  color: #7ec8ff;
+  font-size: 12px;
+  font-weight: 600;
+}

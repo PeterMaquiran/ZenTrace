@@ -87,3 +87,29 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+.span-micro-event.log-event {
+  width: 5px;
+  height: 5px;
+  background-color: #00d4ff;
+  box-shadow: 0 0 4px rgba(0, 212, 255, 0.6);
+}
+
+.span-micro-event.log-event-info {
+  background-color: #4caf50;
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+}
+
+.span-micro-event.log-event-warn {
+  background-color: #ffb300;
+  box-shadow: 0 0 4px rgba(255, 179, 0, 0.6);
+}
+
+.span-micro-event.log-event-error {
+  background-color: #f44336;
+  box-shadow: 0 0 4px rgba(244, 67, 54, 0.6);
+}
+
+.span-micro-event.milestone-event {
+  background-color: #ffffff;
+}

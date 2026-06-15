@@ -1,119 +1,88 @@
 import { Fragment } from 'preact'
 
+import { httpStatusClass, extractLogs } from '../span-details'
+import type { FlatRenderNode, TraceLog } from '../types'
 import './../style/InspectorDrawers.scss'
-import React from 'preact/compat'
 
-import type { FlatRenderNode } from '../types'
+import type { SpanData } from '../../src/core/types'
 
 interface InspectorDrawerProps {
   selectedNode: FlatRenderNode | null
-  // This explicit signature supports both direct objects and functional updates
-  setSelectedNode: (
-    value:
-      | FlatRenderNode
-      | null
-      | ((prevState: FlatRenderNode | null) => FlatRenderNode | null),
-  ) => void
+  liveSpans: SpanData[]
+  traceStartUs: number
+  onClose: () => void
+}
+
+function formatOffset(spanStartMs: number, eventMs: number): string {
+  const relative = Math.max(0, Math.round(eventMs - spanStartMs))
+  return `+${relative}ms`
+}
+
+function LogLevelBadge({ level }: { level: TraceLog['level'] }) {
+  return <span class={`log-level log-level-${level}`}>{level}</span>
 }
 
 export function InspectorDrawer({
   selectedNode,
-  setSelectedNode,
+  liveSpans,
+  traceStartUs,
+  onClose,
 }: InspectorDrawerProps) {
-  // Method to handle log output to console
-  const handleShowLogs = () => {
-    if (!selectedNode) return
-
-    console.group(
-      `%c[Trace Log] ${selectedNode.span.name}`,
-      `color: ${selectedNode.span.colorHex || '#00d4ff'}; font-weight: bold;`,
-    )
-    console.log('Execution Depth:', `Level ${selectedNode.depth}`)
-    console.log('Start Offset:', `${selectedNode.span.startMs}ms`)
-    console.log('Total Duration:', `${selectedNode.span.durationMs}ms`)
-
-    try {
-      console.log(
-        'Input Parameters:',
-        selectedNode.span.input ? JSON.parse(selectedNode.span.input) : 'None',
-      )
-    } catch {
-      console.log('Input Parameters (Raw):', selectedNode.span.input || 'None')
-    }
-
-    try {
-      console.log(
-        'Output Context:',
-        selectedNode.span.output
-          ? JSON.parse(selectedNode.span.output)
-          : 'None',
-      )
-    } catch {
-      console.log('Output Context (Raw):', selectedNode.span.output || 'None')
-    }
-
-    if (selectedNode.span.events && selectedNode.span.events.length > 0) {
-      console.table(selectedNode.span.events)
-    }
-    console.groupEnd()
-  }
+  const span = selectedNode?.span
+  const rawSpan = span?.spanId
+    ? liveSpans.find((item) => item.id === span.spanId)
+    : undefined
+  const logs: TraceLog[] = rawSpan
+    ? extractLogs(rawSpan, traceStartUs)
+    : (span?.logs ?? [])
+  const http = span?.http
+  const milestones = span?.events ?? []
 
   return (
     <Fragment>
       <div class={`inspector-drawer ${selectedNode ? 'is-visible' : ''}`}>
-        {selectedNode && (
+        {selectedNode && span && (
           <Fragment>
             <div class="drawer-header">
               <div class="drawer-title-box">
                 <span
                   class="tree-node-badge"
-                  style={{ backgroundColor: selectedNode.span.colorHex }}
+                  style={{ backgroundColor: span.colorHex }}
                 />
-                <h3 class="drawer-title">{selectedNode.span.name}</h3>
+                <h3 class="drawer-title">{span.name}</h3>
+                {span.isHttp && http && (
+                  <span
+                    class={`http-method-pill ${httpStatusClass(http.status)}`}
+                  >
+                    {http.method}
+                  </span>
+                )}
               </div>
-              <button
-                type="button"
-                class="close-drawer-btn"
-                onClick={() => setSelectedNode(null)}
-              >
+              <button type="button" class="close-drawer-btn" onClick={onClose}>
                 ×
               </button>
             </div>
 
             <div class="drawer-body">
-              {/* Section 1: Core Performance Parameters */}
               <div>
-                <div class="section-header-row">
-                  <h4 class="section-heading">Execution Overview</h4>
-                  <button
-                    type="button"
-                    class="show-logs-btn"
-                    onClick={handleShowLogs}
-                  >
-                    View Logs
-                  </button>
-                  <button
-                    type="button"
-                    class="show-logs-btn"
-                    onClick={handleShowLogs}
-                  >
-                    View http request
-                  </button>
-                </div>
+                <h4 class="section-heading">Execution Overview</h4>
                 <div class="meta-grid">
                   <div class="meta-row">
                     <span class="meta-key">Start Offset</span>
-                    <span class="meta-val">{selectedNode.span.startMs} ms</span>
+                    <span class="meta-val">{span.startMs} ms</span>
                   </div>
                   <div class="meta-row">
                     <span class="meta-key">Total Duration</span>
-                    <span
-                      class="meta-val"
-                      style={{ color: selectedNode.span.colorHex }}
-                    >
-                      {selectedNode.span.durationMs} ms
+                    <span class="meta-val" style={{ color: span.colorHex }}>
+                      {span.durationMs} ms
                     </span>
                   </div>
+                  {span.module && (
+                    <div class="meta-row">
+                      <span class="meta-key">Module</span>
+                      <span class="meta-val">{span.module}</span>
+                    </div>
+                  )}
                   <div class="meta-row">
                     <span class="meta-key">Hierarchy Depth</span>
                     <span class="meta-val">Level {selectedNode.depth}</span>
@@ -121,57 +90,110 @@ export function InspectorDrawer({
                 </div>
               </div>
 
-              {/* Section 2: Incoming Call Context JSON Payload */}
+              {http && (
+                <div>
+                  <h4 class="section-heading">HTTP Request</h4>
+                  <div class="http-card">
+                    <div class="http-card-row">
+                      <span class="meta-key">Method</span>
+                      <span
+                        class={`http-method-pill ${httpStatusClass(http.status)}`}
+                      >
+                        {http.method}
+                      </span>
+                    </div>
+                    <div class="http-card-row http-url-row">
+                      <span class="meta-key">URL</span>
+                      <code class="http-url" title={http.url}>
+                        {http.url}
+                      </code>
+                    </div>
+                    <div class="http-card-row">
+                      <span class="meta-key">Status</span>
+                      <span
+                        class={`http-status-value ${httpStatusClass(http.status)}`}
+                      >
+                        {http.status ?? '…'}
+                        {http.statusText ? ` ${http.statusText}` : ''}
+                      </span>
+                    </div>
+                    <div class="http-card-row">
+                      <span class="meta-key">Duration</span>
+                      <span class="meta-val">{span.durationMs} ms</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div>
-                <h4 class="section-heading">Input Attributes (Arguments)</h4>
-                {selectedNode.span.input ? (
-                  <pre class="code-payload">
-                    <code>{selectedNode.span.input}</code>
-                  </pre>
+                <h4 class="section-heading">
+                  Console Logs {logs.length > 0 ? `(${logs.length})` : ''}
+                </h4>
+                {logs.length > 0 ? (
+                  <div class="drawer-logs-list">
+                    {logs.map((log, idx) => (
+                      <div
+                        key={idx}
+                        class={`drawer-log-item log-item-${log.level}`}
+                      >
+                        <div class="drawer-log-header">
+                          <LogLevelBadge level={log.level} />
+                          <span class="drawer-log-time">
+                            {formatOffset(span.startMs, log.timestampMs)}
+                          </span>
+                        </div>
+                        <pre class="drawer-log-message">{log.message}</pre>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <span class="empty-state">
-                    No context arguments recorded for this runtime span
-                    execution context layer.
+                    No console output captured for this span.
                   </span>
                 )}
               </div>
 
-              {/* Section 3: Call Output Context / Responses */}
               <div>
-                <h4 class="section-heading">
-                  Output Result / Exception Returns
-                </h4>
-                {selectedNode.span.output ? (
+                <h4 class="section-heading">Input Arguments</h4>
+                {span.input ? (
                   <pre class="code-payload">
-                    <code>{selectedNode.span.output}</code>
+                    <code>{span.input}</code>
                   </pre>
                 ) : (
-                  <span class="empty-state">
-                    No execution context output or logs captured.
-                  </span>
+                  <span class="empty-state">No input arguments recorded.</span>
                 )}
               </div>
 
-              {/* Section 4: Deep Chronological Milestones / Execution Spikes */}
+              <div>
+                <h4 class="section-heading">Output Result</h4>
+                {span.output ? (
+                  <pre class="code-payload">
+                    <code>{span.output}</code>
+                  </pre>
+                ) : (
+                  <span class="empty-state">No output captured.</span>
+                )}
+              </div>
+
               <div>
                 <h4 class="section-heading">
-                  Chronological Lifecycle Milestones
+                  Lifecycle Events{' '}
+                  {milestones.length > 0 ? `(${milestones.length})` : ''}
                 </h4>
-                {selectedNode.span.events &&
-                selectedNode.span.events.length > 0 ? (
+                {milestones.length > 0 ? (
                   <div class="drawer-events-list">
-                    {selectedNode.span.events.map((evt, idx) => (
+                    {milestones.map((evt, idx) => (
                       <div key={idx} class="drawer-event-item">
                         <span class="drawer-event-name">{evt.name}</span>
                         <span class="drawer-event-time">
-                          +{evt.timestampMs}ms
+                          {formatOffset(span.startMs, evt.timestampMs)}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <span class="empty-state">
-                    No timeline events or tracing signals emitted by this node.
+                    No lifecycle events for this span.
                   </span>
                 )}
               </div>

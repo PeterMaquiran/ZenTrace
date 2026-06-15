@@ -8,7 +8,9 @@ import './listener'
 import './devtools-bridge'
 import { EXAMPLE_TRACE_DATA } from './example.data'
 import './style/global.scss'
-import { buildTraceView } from './trace-model'
+import { mergeSpanUpdate } from './merge-span'
+import { httpStatusClass } from './span-details'
+import { buildTraceView, countTraceSignals } from './trace-model'
 import type { FlatRenderNode, TraceNode } from './types'
 
 export type { FlatRenderNode, TraceEvent, TraceNode } from './types'
@@ -19,12 +21,22 @@ function PremiumTraceGantt() {
 
   useEffect(() => {
     return window.__TRACE__.subscribe((span) => {
+      if (!span?.id) return
+
       setLiveSpans((current) => {
-        const next = [...current]
-        const index = next.findIndex((item) => item.id === span.id)
-        if (index === -1) next.push(span)
-        else next[index] = span
-        return next
+        try {
+          const next = [...current]
+          const index = next.findIndex((item) => item.id === span.id)
+          if (index === -1) next.push(span)
+          else next[index] = mergeSpanUpdate(next[index], span)
+          return next
+        } catch {
+          const next = [...current]
+          const index = next.findIndex((item) => item.id === span.id)
+          if (index === -1) next.push(span)
+          else next[index] = span
+          return next
+        }
       })
     })
   }, [])
@@ -52,14 +64,25 @@ function PremiumTraceGantt() {
 
   const usingLiveTrace = liveSpans.length > 0
   const totalMs = traceData.totalDurationMs
+  const traceStartUs = useMemo(
+    () =>
+      liveSpans.length > 0
+        ? Math.min(...liveSpans.map((span) => span.timestamp))
+        : 0,
+    [liveSpans],
+  )
+  const signalCounts = useMemo(
+    () => countTraceSignals(traceData.rootSpan),
+    [traceData],
+  )
 
   const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>(
     {},
   )
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null)
 
-  // High-performance context selector node mapping state
-  const [selectedNode, setSelectedNode] = useState<FlatRenderNode | null>(null)
+  // Selection id only — node data is always resolved from latest trace tree
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   // Flatten structures
   const flatNodesList = useMemo(() => {
@@ -91,6 +114,11 @@ function PremiumTraceGantt() {
     return accumulator
   }, [traceData])
 
+  const selectedNode = useMemo(
+    () => flatNodesList.find((node) => node.id === selectedId) ?? null,
+    [flatNodesList, selectedId],
+  )
+
   // Dynamic layout calculations
   const visibleNodesList = useMemo(() => {
     const list: FlatRenderNode[] = []
@@ -119,7 +147,11 @@ function PremiumTraceGantt() {
   return (
     <div class="dashboard-wrapper">
       {usingLiveTrace && (
-        <p class="live-trace-banner">Live trace · {liveSpans.length} spans</p>
+        <p class="live-trace-banner">
+          Live trace · {liveSpans.length} spans
+          {signalCounts.logs > 0 && ` · ${signalCounts.logs} logs`}
+          {signalCounts.http > 0 && ` · ${signalCounts.http} HTTP`}
+        </p>
       )}
       <div class={`split-view-container ${selectedNode ? 'drawer-open' : ''}`}>
         {/* ==========================================================================
@@ -147,7 +179,7 @@ function PremiumTraceGantt() {
                     }
                     onMouseEnter={() => setHoveredNodeId(item.id)}
                     onMouseLeave={() => setHoveredNodeId(null)}
-                    onClick={() => setSelectedNode(item)}
+                    onClick={() => setSelectedId(item.id)}
                   >
                     {/* Guides vertical lines */}
                     {item.depth > 0 &&
@@ -189,6 +221,19 @@ function PremiumTraceGantt() {
                         style={{ backgroundColor: item.span.colorHex }}
                       />
                       <span class="tree-node-name">{item.span.name}</span>
+                      {item.span.isHttp && item.span.http && (
+                        <span
+                          class={`span-chip http-chip ${item.span.http.status ? httpStatusClass(item.span.http.status) : ''}`}
+                        >
+                          {item.span.http.method}
+                        </span>
+                      )}
+                      {item.span.logs && item.span.logs.length > 0 && (
+                        <span class="span-chip log-chip">
+                          {item.span.logs.length} log
+                          {item.span.logs.length === 1 ? '' : 's'}
+                        </span>
+                      )}
                     </div>
                     <span class="tree-node-duration">
                       {item.span.durationMs}ms
@@ -264,7 +309,7 @@ function PremiumTraceGantt() {
                   style={rowStyles}
                   onMouseEnter={() => setHoveredNodeId(item.id)}
                   onMouseLeave={() => setHoveredNodeId(null)}
-                  onClick={() => setSelectedNode(item)}
+                  onClick={() => setSelectedId(item.id)}
                 >
                   <div class="waterfall-track">
                     <div class="waterfall-bar" style={barStyles}>
@@ -282,10 +327,10 @@ function PremiumTraceGantt() {
                           return (
                             <div
                               key={evtIdx}
-                              class="span-micro-event"
+                              class="span-micro-event milestone-event"
                               style={
                                 {
-                                  '--event-offset-pct': `${relativePercent}%`,
+                                  '--event-offset-pct': `${Math.max(0, Math.min(relativePercent, 100))}%`,
                                 } as any
                               }
                             >
@@ -303,6 +348,37 @@ function PremiumTraceGantt() {
                             </div>
                           )
                         })}
+                        {item.span.logs?.map((log, logIdx) => {
+                          const spanDuration = item.span.durationMs || 1
+                          const relativePercent =
+                            ((log.timestampMs - item.span.startMs) /
+                              spanDuration) *
+                            100
+
+                          return (
+                            <div
+                              key={`log-${logIdx}`}
+                              class={`span-micro-event log-event log-event-${log.level}`}
+                              style={
+                                {
+                                  '--event-offset-pct': `${Math.max(0, Math.min(relativePercent, 100))}%`,
+                                } as any
+                              }
+                            >
+                              <div class="event-tooltip">
+                                <div class="tooltip-title">
+                                  [{log.level}] {log.message}
+                                </div>
+                                <div class="tooltip-time">
+                                  {Math.round(
+                                    log.timestampMs - item.span.startMs,
+                                  )}{' '}
+                                  ms
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
                   </div>
@@ -313,116 +389,11 @@ function PremiumTraceGantt() {
         </div>
       </div>
 
-      {/* ==========================================================================
-         METADATA INSPECTION SIDE POPUP DRAWER
-         ========================================================================== */}
-      <div class={`inspector-drawer ${selectedNode ? 'is-visible' : ''}`}>
-        {selectedNode && (
-          <>
-            <div class="drawer-header">
-              <div class="drawer-title-box">
-                <span
-                  class="tree-node-badge"
-                  style={{ backgroundColor: selectedNode.span.colorHex }}
-                />
-                <h3 class="drawer-title">{selectedNode.span.name}</h3>
-              </div>
-              <button
-                class="close-drawer-btn"
-                onClick={() => setSelectedNode(null)}
-              >
-                ×
-              </button>
-            </div>
-
-            <div class="drawer-body">
-              {/* Section 1: Core Performance Parameters */}
-              <div>
-                <h4 class="section-heading">Execution Overview</h4>
-                <div class="meta-grid">
-                  <div class="meta-row">
-                    <span class="meta-key">Start Offset</span>
-                    <span class="meta-val">{selectedNode.span.startMs} ms</span>
-                  </div>
-                  <div class="meta-row">
-                    <span class="meta-key">Total Duration</span>
-                    <span
-                      class="meta-val"
-                      style={{ color: selectedNode.span.colorHex }}
-                    >
-                      {selectedNode.span.durationMs} ms
-                    </span>
-                  </div>
-                  <div class="meta-row">
-                    <span class="meta-key">Hierarchy Depth</span>
-                    <span class="meta-val">Level {selectedNode.depth}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 2: Incoming Call Context JSON Payload */}
-              <div>
-                <h4 class="section-heading">Input Attributes (Arguments)</h4>
-                {selectedNode.span.input ? (
-                  <pre class="code-payload">
-                    <code>{selectedNode.span.input}</code>
-                  </pre>
-                ) : (
-                  <span class="empty-state">
-                    No context arguments recorded for this runtime span
-                    execution context layer.
-                  </span>
-                )}
-              </div>
-
-              {/* Section 3: Call Output Context / Responses */}
-              <div>
-                <h4 class="section-heading">
-                  Output Result / Exception Returns
-                </h4>
-                {selectedNode.span.output ? (
-                  <pre class="code-payload">
-                    <code>{selectedNode.span.output}</code>
-                  </pre>
-                ) : (
-                  <span class="empty-state">
-                    No execution context output or logs captured.
-                  </span>
-                )}
-              </div>
-
-              {/* Section 4: Deep Chronological Milestones / Execution Spikes */}
-              <div>
-                <h4 class="section-heading">
-                  Chronological Lifecycle Milestones
-                </h4>
-                {selectedNode.span.events &&
-                selectedNode.span.events.length > 0 ? (
-                  <div class="drawer-events-list">
-                    {selectedNode.span.events.map((evt, idx) => (
-                      <div key={idx} class="drawer-event-item">
-                        <span class="drawer-event-name">{evt.name}</span>
-                        <span class="drawer-event-time">
-                          +{evt.timestampMs}ms
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <span class="empty-state">
-                    No timeline events or tracing signals emitted by this node.
-                  </span>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* 3. Drop the Inspector Drawer directly into your layout hierarchy */}
       <InspectorDrawer
         selectedNode={selectedNode}
-        setSelectedNode={setSelectedNode}
+        liveSpans={liveSpans}
+        traceStartUs={traceStartUs}
+        onClose={() => setSelectedId(null)}
       />
     </div>
   )

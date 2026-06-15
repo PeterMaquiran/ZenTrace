@@ -124,3 +124,181 @@
   color: rgba(255, 255, 255, 0.25);
   font-size: 11px;
 }
+
+/* Span chips in tree */
+.span-chip {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.log-chip {
+  background: rgba(0, 212, 255, 0.12);
+  color: #7ec8ff;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+}
+
+.http-chip {
+  background: rgba(124, 77, 255, 0.15);
+  color: #c4b5fd;
+  border: 1px solid rgba(124, 77, 255, 0.35);
+}
+
+.http-chip.http-status-ok {
+  background: rgba(76, 175, 80, 0.15);
+  color: #81c784;
+  border-color: rgba(76, 175, 80, 0.35);
+}
+
+.http-chip.http-status-warn {
+  background: rgba(255, 179, 0, 0.15);
+  color: #ffcc80;
+  border-color: rgba(255, 179, 0, 0.35);
+}
+
+.http-chip.http-status-error {
+  background: rgba(244, 67, 54, 0.15);
+  color: #ef9a9a;
+  border-color: rgba(244, 67, 54, 0.35);
+}
+
+/* HTTP inspector card */
+.http-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(124, 77, 255, 0.06);
+  border: 1px solid rgba(124, 77, 255, 0.2);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.http-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+}
+
+.http-url-row {
+  align-items: flex-start;
+}
+
+.http-url {
+  font-family: monospace;
+  font-size: 10px;
+  color: #c4b5fd;
+  word-break: break-all;
+  text-align: right;
+  max-width: 240px;
+}
+
+.http-method-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  background: rgba(124, 77, 255, 0.2);
+  color: #c4b5fd;
+  border: 1px solid rgba(124, 77, 255, 0.35);
+}
+
+.http-status-value.http-status-ok {
+  color: #81c784;
+}
+
+.http-status-value.http-status-warn {
+  color: #ffcc80;
+}
+
+.http-status-value.http-status-error {
+  color: #ef9a9a;
+}
+
+.http-status-value.http-status-pending {
+  color: #8a90a6;
+}
+
+/* Console logs in drawer */
+.drawer-logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawer-log-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 8px 10px;
+  border-left: 3px solid rgba(0, 212, 255, 0.5);
+}
+
+.drawer-log-item.log-item-warn {
+  border-left-color: #ffb300;
+}
+
+.drawer-log-item.log-item-error {
+  border-left-color: #f44336;
+}
+
+.drawer-log-item.log-item-info {
+  border-left-color: #4caf50;
+}
+
+.drawer-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.log-level {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.log-level-log {
+  background: rgba(0, 212, 255, 0.12);
+  color: #7ec8ff;
+}
+
+.log-level-info {
+  background: rgba(76, 175, 80, 0.15);
+  color: #81c784;
+}
+
+.log-level-warn {
+  background: rgba(255, 179, 0, 0.15);
+  color: #ffcc80;
+}
+
+.log-level-error {
+  background: rgba(244, 67, 54, 0.15);
+  color: #ef9a9a;
+}
+
+.drawer-log-message {
+  margin: 0;
+  font-family: monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: #d4d8e8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.drawer-log-time {
+  font-family: monospace;
+  font-size: 10px;
+  color: #ffb300;
+}

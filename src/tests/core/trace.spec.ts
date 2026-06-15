@@ -4,7 +4,7 @@ import { Span, trace } from '@/index'
 
 class TestService {
   @trace({ captureArgs: true, captureResult: true })
-  async sum(a: number, b: number, _span?: Span) {
+  async sum(a: number, b: number) {
     return a + b
   }
 
@@ -13,15 +13,9 @@ class TestService {
     throw new Error('boom')
   }
 
-  @trace({ captureArgs: true, captureResult: true, ...{ span: true } })
+  @trace({ captureArgs: true, captureResult: true, span: true })
   async returnSpan() {
-    return 123 as any
-  }
-
-  @trace({ captureArgs: true, captureResult: true })
-  async injectSpan(a: number, b: number, span?: Span) {
-    expect(span).toBeInstanceOf(Span)
-    return a + b
+    return 123
   }
 }
 
@@ -35,11 +29,6 @@ describe('trace decorator', () => {
   it('traces successful execution', async () => {
     const result = await service.sum(1, 2)
     expect(result).toBe(3)
-  })
-
-  it('injects span into method', async () => {
-    const result = await service.injectSpan(2, 3)
-    expect(result).toBe(5)
   })
 
   it('throws errors correctly', async () => {

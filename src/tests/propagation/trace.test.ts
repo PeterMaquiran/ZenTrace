@@ -1,29 +1,23 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 
-import type { Span } from '../../core/span'
+import type { Span} from '../../decorator/index';
 import { trace } from '../../decorator/index'
+import { SpanStorage } from '../../storage/memory-storage'
 
-// --- TEST CLASS ---
 class TestService {
   @trace({ captureArgs: true, captureResult: true })
-  async success(a: any, b: any, _span?: Span) {
-    return this.success1(a, b, _span)
+  async success(a: number, b: number) {
+    return this.success1(a, b)
   }
 
   @trace({ captureArgs: true, captureResult: true })
-  async success1(a: any, b: any, _span?: Span) {
-    console.log(_span?.context.spanId)
+  async success1(a: number, b: number) {
     return a + b
   }
 
-  @trace({ captureArgs: true, captureResult: true, ...{ span: true } })
-  async returnSpan(a: any, b: any): Promise<Span> {
-    return (a + b) as any
-  }
-
-  @trace({ captureArgs: true, captureResult: true })
-  async span(a: any, b: any) {
-    return a + b
+  @trace({ captureArgs: true, captureResult: true, span: true })
+  async returnSpan(a: number, b: number): Promise<Span> {
+    return (a + b) as unknown as Span
   }
 
   @trace({ captureArgs: true })
@@ -32,16 +26,27 @@ class TestService {
   }
 }
 
-// --- TESTS ---
-describe('trace decorator (instance tracer)', () => {
+describe('automatic trace propagation', () => {
   let service: TestService
 
   beforeEach(() => {
+    SpanStorage.clear()
     service = new TestService()
   })
 
-  it('should create child span when parent exists', async () => {
+  it('links nested traced calls via stack context', async () => {
     const result = await service.success(1, 2)
     expect(result).toBe(3)
+
+    const spans = SpanStorage.getAll()
+    expect(spans.length).toBe(2)
+
+    const child = spans.find((span) => span.name === 'success1')
+    const parent = spans.find((span) => span.name === 'success')
+
+    expect(child).toBeDefined()
+    expect(parent).toBeDefined()
+    expect(child?.context.parentId).toBe(parent?.context.spanId)
+    expect(child?.context.traceId).toBe(parent?.context.traceId)
   })
 })

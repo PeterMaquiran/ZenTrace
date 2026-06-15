@@ -1,10 +1,12 @@
 import { Fragment } from 'preact'
 
+import type { SpanData } from '../../src/core/types'
 import { httpStatusClass, extractLogs } from '../span-details'
 import type { FlatRenderNode, TraceLog } from '../types'
-import './../style/InspectorDrawers.scss'
 
-import type { SpanData } from '../../src/core/types'
+import { JsonViewer } from './JsonViewer'
+import { LogMessage } from './LogMessage'
+import './../style/InspectorDrawers.scss'
 
 interface InspectorDrawerProps {
   selectedNode: FlatRenderNode | null
@@ -142,7 +144,7 @@ export function InspectorDrawer({
                             {formatOffset(span.startMs, log.timestampMs)}
                           </span>
                         </div>
-                        <pre class="drawer-log-message">{log.message}</pre>
+                        <LogMessage message={log.message} />
                       </div>
                     ))}
                   </div>
@@ -156,9 +158,7 @@ export function InspectorDrawer({
               <div>
                 <h4 class="section-heading">Input Arguments</h4>
                 {span.input ? (
-                  <pre class="code-payload">
-                    <code>{span.input}</code>
-                  </pre>
+                  <JsonViewer value={span.input} collapseAfterDepth={1} />
                 ) : (
                   <span class="empty-state">No input arguments recorded.</span>
                 )}
@@ -167,9 +167,7 @@ export function InspectorDrawer({
               <div>
                 <h4 class="section-heading">Output Result</h4>
                 {span.output ? (
-                  <pre class="code-payload">
-                    <code>{span.output}</code>
-                  </pre>
+                  <JsonViewer value={span.output} collapseAfterDepth={1} />
                 ) : (
                   <span class="empty-state">No output captured.</span>
                 )}

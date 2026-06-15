@@ -1,189 +1,58 @@
 import { render } from 'preact'
-import { useState, useMemo } from 'preact/hooks'
+import { useEffect, useMemo, useState } from 'preact/hooks'
+
+import type { SpanData } from '../src/core/types'
 
 import { InspectorDrawer } from './component/InspectorDrawer'
+import './listener'
+import './devtools-bridge'
+import { EXAMPLE_TRACE_DATA } from './example.data'
 import './style/global.scss'
-export interface TraceEvent {
-  name: string
-  timestampMs: number
-}
+import { buildTraceView } from './trace-model'
+import type { FlatRenderNode, TraceNode } from './types'
 
-export interface TraceNode {
-  name: string
-  startMs: number
-  durationMs: number
-  colorHex: string
-  input?: string // Structured stringified JSON input payloads
-  output?: string // Response payload parameters strings
-  events?: TraceEvent[]
-  children: TraceNode[]
-}
-
-export interface FlatRenderNode {
-  span: TraceNode
-  depth: number
-  id: string
-  parentId: string | null
-  hasChildren: boolean
-}
-
-const ASSET_TRACE_DATA = {
-  totalDurationMs: 255, // Fixed to fit the maximum boundary child node safely
-  rootSpan: {
-    name: 'frontend',
-    startMs: 0,
-    durationMs: 255, // Expanded to contain all downstream asynchronous cascades
-    colorHex: '#4caf50',
-    input: JSON.stringify(
-      {
-        orderId: '88231',
-        expressShipping: true,
-        customerId: 'usr_99x77a2',
-        items: [
-          { sku: 'SKU-882', qty: 2, price: 49.99 },
-          { sku: 'SKU-104', qty: 1, price: 9.5 },
-        ],
-        metadata: {
-          clientIp: '192.168.1.1',
-          gateway: 'stripe_v3',
-          userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-        },
-      },
-      null,
-      2,
-    ),
-    output:
-      "Order accepted successfully. Job dispatched to background worker queue 'high_priority'.",
-    events: [
-      { name: 'DOMReady', timestampMs: 15 },
-      { name: 'FetchAuthStarted', timestampMs: 25 },
-    ],
-    children: [
-      {
-        name: 'auth',
-        startMs: 25,
-        durationMs: 225, // Wraps around everything it orchestrates downstream
-        colorHex: '#ffb300',
-        input: JSON.stringify(
-          { tokenType: 'Bearer', scope: 'write:orders' },
-          null,
-          2,
-        ),
-        output: "Token decoded. Valid session sub='peter_mq'.",
-        events: [
-          { name: 'CacheMiss', timestampMs: 30 },
-          { name: 'DecryptToken', timestampMs: 55 },
-        ],
-        children: [
-          {
-            name: 'internal',
-            startMs: 60,
-            durationMs: 190, // Wraps inside parent auth context bounds
-            colorHex: '#4caf50',
-            children: [
-              {
-                name: 'payment-gateway',
-                startMs: 75,
-                durationMs: 175, // 75 + 175 = 250ms (inside internal's 250ms absolute cap)
-                colorHex: '#f44336',
-                input: JSON.stringify(
-                  { amount: 109.48, currency: 'USD' },
-                  null,
-                  2,
-                ),
-                events: [{ name: 'DBConnectionPoolLock', timestampMs: 80 }],
-                children: [
-                  {
-                    name: 'ProcessAuthorization',
-                    startMs: 85,
-                    durationMs: 160, // 85 + 160 = 245ms
-                    colorHex: '#f44336',
-                    events: [{ name: 'GCRun_Spike', timestampMs: 135 }],
-                    children: [
-                      {
-                        name: 'external-call',
-                        startMs: 220,
-                        durationMs: 25, // 220 + 25 = 245ms (perfectly fits inside parent)
-                        colorHex: '#f44336',
-                        input:
-                          "{ endpoint: 'https://api.stripe.com/v3/charges' }",
-                        output: "{ status: 'succeeded', chargeId: 'ch_3MxsY' }",
-                        children: [],
-                      },
-                    ],
-                  },
-                  {
-                    name: 'ext_request',
-                    startMs: 90,
-                    durationMs: 155, // 90 + 155 = 245ms
-                    colorHex: '#f44336',
-                    children: [
-                      {
-                        name: 'nested-auth-verify',
-                        startMs: 95,
-                        durationMs: 40, // 95 + 40 = 135ms
-                        colorHex: '#ffb300',
-                        input: JSON.stringify(
-                          { tokenType: 'Bearer', scope: 'write:orders' },
-                          null,
-                          2,
-                        ),
-                        output: 'Token verified via sidecar sync check.',
-                        events: [
-                          { name: 'CacheMiss', timestampMs: 100 },
-                          { name: 'DecryptToken', timestampMs: 120 },
-                        ],
-                        children: [
-                          {
-                            name: 'internal-cache-lookup',
-                            startMs: 105,
-                            durationMs: 15, // 105 + 15 = 120ms
-                            colorHex: '#4caf50',
-                            children: [
-                              {
-                                name: 'redis-cluster-ping',
-                                startMs: 110,
-                                durationMs: 10, // 110 + 10 = 120ms
-                                colorHex: '#f44336',
-                                input: JSON.stringify(
-                                  { clusterNode: 'redis_node_01' },
-                                  null,
-                                  2,
-                                ),
-                                events: [
-                                  {
-                                    name: 'CacheHitConfirmed',
-                                    timestampMs: 115,
-                                  },
-                                ],
-                                children: [],
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    name: 'external-call-secondary',
-                    startMs: 220,
-                    durationMs: 25, // 220 + 25 = 245ms
-                    colorHex: '#f44336',
-                    children: [],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-}
+export type { FlatRenderNode, TraceEvent, TraceNode } from './types'
 
 function PremiumTraceGantt() {
-  const totalMs = ASSET_TRACE_DATA.totalDurationMs
+  const [liveSpans, setLiveSpans] = useState<SpanData[]>([])
   const rowHeight = 32
+
+  useEffect(() => {
+    return window.__TRACE__.subscribe((span) => {
+      setLiveSpans((current) => {
+        console.log('received trace:', span)
+        const next = [...current]
+        const index = next.findIndex((item) => item.id === span.id)
+        if (index === -1) next.push(span)
+        else next[index] = span
+        return next
+      })
+    })
+  }, [])
+
+  const isDevToolsPanel =
+    typeof chrome !== 'undefined' && Boolean(chrome.devtools)
+
+  const traceData = useMemo(() => {
+    const live = buildTraceView(liveSpans)
+    if (live) return live
+    if (isDevToolsPanel) {
+      return {
+        totalDurationMs: 1,
+        rootSpan: {
+          name: 'waiting for traces',
+          startMs: 0,
+          durationMs: 1,
+          colorHex: '#666',
+          children: [],
+        },
+      }
+    }
+    return EXAMPLE_TRACE_DATA
+  }, [isDevToolsPanel, liveSpans])
+
+  const usingLiveTrace = liveSpans.length > 0
+  const totalMs = traceData.totalDurationMs
 
   const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>(
     {},
@@ -219,9 +88,9 @@ function PremiumTraceGantt() {
         )
       }
     }
-    flattenTreeData(ASSET_TRACE_DATA.rootSpan)
+    flattenTreeData(traceData.rootSpan)
     return accumulator
-  }, [])
+  }, [traceData])
 
   // Dynamic layout calculations
   const visibleNodesList = useMemo(() => {
@@ -250,6 +119,9 @@ function PremiumTraceGantt() {
 
   return (
     <div class="dashboard-wrapper">
+      {usingLiveTrace && (
+        <p class="live-trace-banner">Live trace · {liveSpans.length} spans</p>
+      )}
       <div class={`split-view-container ${selectedNode ? 'drawer-open' : ''}`}>
         {/* ==========================================================================
            LEFT PANEL: CASCADE TREE PIPELINE

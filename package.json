@@ -13,7 +13,8 @@
   "scripts": {
     "lint:fix": "eslint --fix",
     "format": "prettier . --write",
-    "dev:extension": "vite ui",
+    "dev:ui": "vite ui",
+    "dev:demo": "vite ui/demo",
     "build:package": "tsc -p tsconfig.build.json && vite build",
     "build:extension": "vite build",
     "test:extension": "playwright test",

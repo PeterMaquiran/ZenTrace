@@ -3,7 +3,7 @@ import { Fragment } from 'preact'
 import './../style/InspectorDrawers.scss'
 import React from 'preact/compat'
 
-import type { FlatRenderNode } from '../main'
+import type { FlatRenderNode } from '../types'
 
 interface InspectorDrawerProps {
   selectedNode: FlatRenderNode | null

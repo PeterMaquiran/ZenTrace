@@ -39,6 +39,35 @@
         padding: 24px;
         position: relative;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 80px);
+        box-sizing: border-box;
+      }
+
+      .workspace {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        gap: 0;
+      }
+
+      .split-view-container {
+        display: flex;
+        gap: 24px;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .split-view-container.span-open .gantt-panel {
+        display: none;
+      }
+
+      .split-view-container.span-open .span-panel {
+        flex: 1;
+        min-width: 0;
       }
 
       h2 {
@@ -47,18 +76,6 @@
         margin: 0 0 20px 0;
         color: var(--text-primary);
         letter-spacing: 0.5px;
-      }
-
-      .split-view-container {
-        display: flex;
-        gap: 24px;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-
-      /* Adjust workspace canvas scaling when drawer opens */
-      .split-view-container.drawer-open {
-        transform: translateX(-20px);
-        margin-right: 360px;
       }
 
       /* ==========================================================================
@@ -71,12 +88,14 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        min-height: 0;
       }
 
       .tree-scroll-container {
         width: 100%;
-        overflow-x: auto;
-        overflow-y: hidden;
+        overflow: auto;
+        flex: 1;
+        min-height: 0;
       }
 
       .tree-canvas {
@@ -194,6 +213,18 @@
       .gantt-panel {
         z-index: 1;
         flex: 1;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding-left: 16px;
+      }
+
+      .gantt-panel .trace-axis-canvas {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
       }
 
       .trace-axis-canvas {

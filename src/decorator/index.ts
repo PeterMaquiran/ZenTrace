@@ -1,5 +1,6 @@
 import { runSpan, type RunSpanOptions } from '../core/run-span'
 import type { Span } from '../core/span'
+import { getDevTraceConfig } from '../testing/configure'
 
 type TraceOptions = {
   module?: string
@@ -24,10 +25,15 @@ export function trace(options: TraceOptions = {}) {
     const marker = `${className}.${propertyKey}`
 
     descriptor.value = async function (...args: unknown[]) {
+      const defaults = getDevTraceConfig()
+      const shouldCaptureArgs = options.captureArgs ?? defaults.captureArgs
+      const shouldCaptureResult =
+        options.captureResult ?? defaults.captureResult
+
       return runSpan(propertyKey, async () => original.apply(this, args), {
         module: options.module,
-        captureArgs: options.captureArgs ? args : undefined,
-        captureResult: options.captureResult,
+        captureArgs: shouldCaptureArgs ? args : undefined,
+        captureResult: shouldCaptureResult,
         returnSpan: options.span,
         marker,
       } satisfies RunSpanOptions)

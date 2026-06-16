@@ -1,5 +1,6 @@
 import { emitTrace } from '../exporters/browser/browser-export'
 import { SpanStorage } from '../storage/memory-storage'
+import { getTraceSession, SESSION_TAGS } from '../testing/session'
 
 import {
   enterSpan,
@@ -10,7 +11,6 @@ import {
 import type { Span } from './span'
 import { captureStack } from './stack'
 import { Tracer } from './tracer'
-
 
 export type RunSpanOptions = {
   module?: string
@@ -37,6 +37,8 @@ export async function runSpan<T>(
   const span =
     parent?.child(name, options.module) ||
     tracer.startSpan(name, undefined, options.module)
+
+  if (!parent) applySessionTags(span)
 
   if (options.marker) markSpan(span, options.marker)
   enterSpan(span)
@@ -78,6 +80,18 @@ export async function runSpan<T>(
 function emitSpan(span: Span, durationMs: number) {
   if (typeof window !== 'undefined') {
     emitTrace(span.toJSON(durationMs * 1000))
+  }
+}
+
+function applySessionTags(span: Span) {
+  const session = getTraceSession()
+  if (!session) return
+
+  span.addAttribute(SESSION_TAGS.sessionId, session.id)
+  span.addAttribute(SESSION_TAGS.testTitle, session.title)
+  span.addAttribute(SESSION_TAGS.testFile, session.file)
+  if (session.project) {
+    span.addAttribute(SESSION_TAGS.testProject, session.project)
   }
 }
 

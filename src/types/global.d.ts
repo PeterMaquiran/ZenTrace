@@ -1,8 +1,10 @@
 import type { SpanData } from '../core/types'
+import type { TraceSession } from '../testing/session'
 
 declare global {
   interface Window {
     __TRACE__: TraceBus
+    __DEVTRACE_SESSION__?: TraceSession
   }
 }
 

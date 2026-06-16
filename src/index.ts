@@ -11,6 +11,26 @@ export {
   installLogCapture,
   installHttpTracing,
 } from './instrumentation/index'
+export {
+  configureDevTrace,
+  getDevTraceConfig,
+  resetDevTraceConfig,
+  clearTraceSession,
+  createTraceSession,
+  extractTestMeta,
+  getTraceSession,
+  setTraceSession,
+  SESSION_TAGS,
+  type DevTraceConfig,
+  type TraceSession,
+} from './testing/index'
+export {
+  attachDevTrace,
+  createSessionFromTestInfo,
+  devTraceSessionInitScript,
+  type DevTracePage,
+  type DevTraceTestInfo,
+} from './playwright/index'
 
 // export * from "./propagation/headers";
 // export * from "./propagation/extract";

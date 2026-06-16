@@ -43,6 +43,12 @@ export function InspectorDrawer({
       </div>
 
       <div class="drawer-body">
+        {span.hasError && (
+          <div class="drawer-error-banner">
+            This span failed. Inspect output, logs, and lifecycle events below.
+          </div>
+        )}
+
         <div>
           <h4 class="section-heading">Execution Overview</h4>
           <div class="meta-grid">
@@ -56,6 +62,12 @@ export function InspectorDrawer({
                 {span.durationMs} ms
               </span>
             </div>
+            {span.percentOfTrace !== undefined && (
+              <div class="meta-row">
+                <span class="meta-key">Share of Trace</span>
+                <span class="meta-val">{span.percentOfTrace}%</span>
+              </div>
+            )}
             {span.module && (
               <div class="meta-row">
                 <span class="meta-key">Module</span>

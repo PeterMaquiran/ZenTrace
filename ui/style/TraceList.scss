@@ -1,0 +1,220 @@
+.trace-back-btn {
+  border: 0;
+  background: transparent;
+  color: #7ec8ff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+.trace-back-btn:hover {
+  color: #ffffff;
+}
+
+.trace-list-panel--full {
+  flex: 1;
+  min-width: 0;
+  border-right: none;
+  padding-right: 0;
+}
+
+.trace-list-subtitle {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--text-secondary, #8a90a6);
+  line-height: 1.45;
+  max-width: 420px;
+}
+
+.trace-list-scroll--full {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  align-content: start;
+}
+
+.trace-list-scroll--full .trace-list-empty {
+  grid-column: 1 / -1;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.trace-list-open-hint {
+  display: block;
+  margin-top: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #7ec8ff;
+  text-align: right;
+}
+
+.trace-screen-picker,
+.trace-screen-detail {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+}
+
+.trace-screen-detail .split-view-container {
+  flex: 1 1 58%;
+  min-height: 220px;
+}
+
+.trace-screen-detail .logs-panel {
+  flex: 1 1 42%;
+  min-height: 300px;
+  max-height: none;
+}
+
+.trace-screen-picker .trace-list-panel {
+  flex: 1;
+}
+
+.trace-list-panel {
+  flex: 0 0 240px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  padding-right: 12px;
+  min-height: 0;
+}
+
+.trace-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.trace-list-header h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.trace-list-count {
+  font-size: 10px;
+  font-family: monospace;
+  color: var(--text-secondary, #8a90a6);
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.trace-list-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.trace-list-empty {
+  margin: 0;
+  padding: 12px 8px;
+  font-size: 11px;
+  color: var(--text-secondary, #8a90a6);
+  line-height: 1.45;
+}
+
+.trace-list-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px 10px 8px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
+}
+
+.trace-list-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.trace-list-item.is-active {
+  background: rgba(0, 132, 255, 0.1);
+  border-color: rgba(0, 132, 255, 0.45);
+  box-shadow: inset 2px 0 0 var(--accent-blue, #0084ff);
+}
+
+.trace-list-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trace-list-name {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--text-primary, #ffffff);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.trace-list-duration {
+  flex-shrink: 0;
+  font-family: monospace;
+  font-size: 10px;
+  color: #7ec8ff;
+}
+
+.trace-list-item-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  font-family: monospace;
+  font-size: 10px;
+  color: #8a90a6;
+}
+
+.trace-list-test {
+  margin-top: 6px;
+  font-size: 10px;
+  color: #c7c8cc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trace-list-error {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #ffcdd2;
+  background: rgba(244, 67, 54, 0.15);
+  border: 1px solid rgba(244, 67, 54, 0.35);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.gantt-time-axis {
+  display: flex;
+  justify-content: space-between;
+  margin: -8px 0 12px;
+  padding: 0 2px;
+  font-family: monospace;
+  font-size: 10px;
+  color: #6b7289;
+}
+
+.gantt-time-axis span:last-child {
+  color: #7ec8ff;
+}

@@ -2,6 +2,16 @@
            PREMIUM METADATA SIDE DRAWER OVERLAY PANEL
            ========================================================================== */
 
+.drawer-error-banner {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(244, 67, 54, 0.12);
+  border: 1px solid rgba(244, 67, 54, 0.35);
+  color: #ffcdd2;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .section-header-row {
   display: flex;
   justify-content: space-between;

@@ -1,4 +1,5 @@
 import type { SpanData } from '../src/core/types'
+import { extractTestMeta } from '../src/testing/session'
 
 import { extractHttp, extractLogs } from './span-details'
 import type { TraceEvent, TraceNode, TraceViewData } from './types'
@@ -83,6 +84,7 @@ function buildNode(
     http,
     module: span.tags?.module,
     isHttp: Boolean(http),
+    hasError: span.tags?.error === 'true',
     children,
   }
 }
@@ -107,6 +109,7 @@ export function buildTraceView(spans: SpanData[]): TraceViewData | null {
         root.durationMs,
       ),
       rootSpan: root,
+      testMeta: readTestMeta(roots[0]),
     }
   }
 
@@ -124,6 +127,17 @@ export function buildTraceView(spans: SpanData[]): TraceViewData | null {
       colorHex: '#4caf50',
       children: rootNodes,
     },
+    testMeta: readTestMeta(roots.at(-1)),
+  }
+}
+
+function readTestMeta(root?: SpanData) {
+  const meta = extractTestMeta(root?.tags)
+  if (!meta) return undefined
+  return {
+    title: meta.title,
+    file: meta.file,
+    project: meta.project,
   }
 }
 
@@ -141,4 +155,86 @@ export function countTraceSignals(root: TraceNode): {
   }
 
   return { logs, http }
+}
+
+export function findTraceRootId(span: SpanData, spans: SpanData[]): string {
+  const byId = new Map(spans.map((item) => [item.id, item]))
+  let current = span
+  let guard = spans.length + 1
+
+  while (current.parentId && guard-- > 0) {
+    const parent = byId.get(current.parentId)
+    if (!parent) break
+    current = parent
+  }
+
+  return current.id
+}
+
+export function latestRootSpanId(spans: SpanData[]): string | null {
+  const roots = spans
+    .filter((span) => !span.parentId)
+    .sort((a, b) => a.timestamp - b.timestamp)
+
+  return roots.at(-1)?.id ?? null
+}
+
+export type TraceSummary = {
+  rootId: string
+  name: string
+  timestampUs: number
+  durationMs: number
+  spanCount: number
+  hasError: boolean
+  testTitle?: string
+}
+
+export function listTraceSummaries(spans: SpanData[]): TraceSummary[] {
+  const roots = spans
+    .filter((span) => !span.parentId)
+    .sort((a, b) => b.timestamp - a.timestamp)
+
+  return roots.map((root) => {
+    const traceSpans = filterSpansByRoot(spans, root.id)
+    const durationMs = root.duration
+      ? root.duration / 1000
+      : Number(root.tags?.duration_ms ?? 0)
+    const testMeta = readTestMeta(root)
+
+    return {
+      rootId: root.id,
+      name: root.name,
+      timestampUs: root.timestamp,
+      durationMs: Math.max(durationMs, 1),
+      spanCount: traceSpans.length,
+      hasError: traceSpans.some((span) => span.tags?.error === 'true'),
+      testTitle: testMeta?.title,
+    }
+  })
+}
+
+export function filterSpansByRoot(
+  spans: SpanData[],
+  rootId: string,
+): SpanData[] {
+  const childrenByParent = new Map<string, SpanData[]>()
+
+  for (const span of spans) {
+    if (!span.parentId) continue
+    const siblings = childrenByParent.get(span.parentId) ?? []
+    siblings.push(span)
+    childrenByParent.set(span.parentId, siblings)
+  }
+
+  const included = new Set<string>()
+  const visit = (id: string) => {
+    if (included.has(id)) return
+    included.add(id)
+    for (const child of childrenByParent.get(id) ?? []) {
+      visit(child.id)
+    }
+  }
+
+  visit(rootId)
+  return spans.filter((span) => included.has(span.id))
 }

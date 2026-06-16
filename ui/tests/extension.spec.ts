@@ -31,11 +31,12 @@ test.describe('DevTrace Chrome extension', () => {
       const page = await openPanel(context, extensionId)
 
       await expect(
-        page.getByRole('heading', { name: 'Trace Cascading Tree Pipeline' }),
+        page.getByRole('heading', { name: 'Span Tree' }),
       ).toBeVisible()
       await expect(
         page.getByRole('heading', { name: 'Deep-Dive Gantt Timeline' }),
       ).toBeVisible()
+      await expect(page.locator('.trace-toolbar')).toBeVisible()
       await expect(page.locator('.dashboard-wrapper')).toBeVisible()
       await expect(
         page.locator('.tree-node-name', { hasText: 'frontend' }),
@@ -65,7 +66,7 @@ test.describe('DevTrace Chrome extension', () => {
     }
   })
 
-  test('interacting with the inspector drawer', async () => {
+  test('toolbar filters are available in detail view with sample data', async () => {
     const context = await launchExtensionContext()
 
     try {
@@ -74,13 +75,13 @@ test.describe('DevTrace Chrome extension', () => {
 
       await page.locator('.tree-row', { hasText: 'frontend' }).first().click()
 
-      await page.locator('.tree-row', { hasText: 'frontend' }).first().click()
-
-      await page.waitForTimeout(100000) // pause here
-
       await expect(
-        page.getByRole('heading', { name: 'Execution Overview' }).first(),
+        page.locator('.trace-filter-btn', { hasText: 'Errors' }),
       ).toBeVisible()
+      await expect(
+        page.locator('.trace-filter-btn', { hasText: 'Slow' }),
+      ).toBeVisible()
+      await expect(page.locator('.trace-clear-btn')).toBeDisabled()
     } finally {
       await context.close()
     }

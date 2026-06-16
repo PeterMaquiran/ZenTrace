@@ -400,6 +400,73 @@
   word-break: break-word;
 }
 
+.log-message-mixed {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-message-mixed-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.log-message-prefix {
+  color: #e6e9f5;
+  font-family: monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.log-message-inline-structured {
+  font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(100%, 420px);
+}
+
+.log-message-structured-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  background: rgba(0, 212, 255, 0.06);
+  color: #7ec8ff;
+  font-family: monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.log-message-structured-toggle:hover {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.25);
+}
+
+.log-message-toggle-icon {
+  color: #8a90a6;
+  font-size: 9px;
+}
+
+.log-message-structured-preview {
+  color: #82aaff;
+}
+
+.log-message-structured-body .json-viewer {
+  margin-top: 0;
+}
+
 .drawer-log-time {
   font-family: monospace;
   font-size: 10px;

@@ -21,6 +21,41 @@ export function parseStructuredValue(value: string): unknown | undefined {
   return undefined
 }
 
+export type MessageStructuredSplit = {
+  prefix: string
+  rawStructured: string
+  data: unknown
+}
+
+/** Split "checkout completed {...}" into prefix text and a parseable suffix. */
+export function splitMessageWithStructuredSuffix(
+  value: string,
+): MessageStructuredSplit | undefined {
+  const openIdx = value.search(/[[{]/)
+  if (openIdx <= 0) return undefined
+
+  const prefix = value.slice(0, openIdx).trimEnd()
+  const rawStructured = value.slice(openIdx).trim()
+  if (!prefix) return undefined
+
+  const data = parseStructuredValue(rawStructured)
+  if (data === undefined) return undefined
+
+  return { prefix, rawStructured, data }
+}
+
+export function structuredValuePreview(data: unknown): string {
+  if (data === null) return 'null'
+  if (Array.isArray(data)) {
+    return `[…${data.length} item${data.length === 1 ? '' : 's'}]`
+  }
+  if (typeof data === 'object') {
+    const keys = Object.keys(data as Record<string, unknown>)
+    return `{…${keys.length} key${keys.length === 1 ? '' : 's'}}`
+  }
+  return String(data)
+}
+
 type Token = { type: string; text: string }
 
 export function tokenizeLooseJson(text: string): Token[] {

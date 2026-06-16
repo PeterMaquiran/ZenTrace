@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from 'preact/hooks'
 
 import type { SpanData } from '../src/core/types'
 
+import { collectFlatLogs } from './collect-logs'
 import { InspectorDrawer } from './component/InspectorDrawer'
+import { LogsPanel } from './component/LogsPanel'
 import './listener'
 import './devtools-bridge'
 import { EXAMPLE_TRACE_DATA } from './example.data'
@@ -144,6 +146,15 @@ function PremiumTraceGantt() {
     setCollapsedNodes((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
+  const flatLogEntries = useMemo(
+    () => collectFlatLogs(flatNodesList, liveSpans, traceStartUs),
+    [flatNodesList, liveSpans, traceStartUs],
+  )
+
+  const selectSpan = (nodeId: string) => {
+    setSelectedId(nodeId)
+  }
+
   return (
     <div class="dashboard-wrapper">
       {usingLiveTrace && (
@@ -153,248 +164,259 @@ function PremiumTraceGantt() {
           {signalCounts.http > 0 && ` · ${signalCounts.http} HTTP`}
         </p>
       )}
-      <div class={`split-view-container ${selectedNode ? 'drawer-open' : ''}`}>
-        {/* ==========================================================================
+      <div class="workspace">
+        <div class={`split-view-container ${selectedNode ? 'span-open' : ''}`}>
+          {/* ==========================================================================
            LEFT PANEL: CASCADE TREE PIPELINE
            ========================================================================== */}
-        <div class="tree-panel">
-          <h2>Trace Cascading Tree Pipeline</h2>
+          <div class="tree-panel">
+            <h2>Trace Cascading Tree Pipeline</h2>
 
-          <div class="tree-scroll-container">
-            <div class="tree-canvas" style={{ height: totalCanvasHeightPx }}>
+            <div class="tree-scroll-container">
+              <div class="tree-canvas" style={{ height: totalCanvasHeightPx }}>
+                {visibleNodesList.map((item, index) => {
+                  const isCollapsed = collapsedNodes[item.id]
+                  const isHovered = hoveredNodeId === item.id
+                  const isSelected = selectedNode?.id === item.id
+
+                  return (
+                    <div
+                      key={`tree-${item.id}`}
+                      class={`tree-row ${isHovered ? 'is-hovered' : ''} ${isSelected ? 'is-selected' : ''}`}
+                      style={
+                        {
+                          '--row-index': index,
+                          paddingLeft: `${item.depth * 14 + 12}px`,
+                        } as any
+                      }
+                      onMouseEnter={() => setHoveredNodeId(item.id)}
+                      onMouseLeave={() => setHoveredNodeId(null)}
+                      onClick={() => selectSpan(item.id)}
+                    >
+                      {/* Guides vertical lines */}
+                      {item.depth > 0 &&
+                        Array.from({ length: item.depth }).map((_, i) => (
+                          <div
+                            key={i}
+                            class="tree-line-vertical"
+                            style={{ left: `${i * 14 + 16}px` }}
+                          />
+                        ))}
+
+                      {/* Node alignment elbows */}
+                      {item.depth > 0 && (
+                        <div
+                          class="tree-line-horizontal"
+                          style={{
+                            left: `${(item.depth - 1) * 14 + 16}px`,
+                            width: '10px',
+                          }}
+                        />
+                      )}
+
+                      <div class="tree-node-content">
+                        {item.hasChildren ? (
+                          <button
+                            class={`collapse-toggle ${isCollapsed ? 'is-collapsed' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleCollapse(item.id)
+                            }}
+                          >
+                            ▼
+                          </button>
+                        ) : (
+                          <span class="tree-bullet">•</span>
+                        )}
+                        <span
+                          class="tree-node-badge"
+                          style={{ backgroundColor: item.span.colorHex }}
+                        />
+                        <span class="tree-node-name">{item.span.name}</span>
+                        {item.span.isHttp && item.span.http && (
+                          <span
+                            class={`span-chip http-chip ${item.span.http.status ? httpStatusClass(item.span.http.status) : ''}`}
+                          >
+                            {item.span.http.method}
+                          </span>
+                        )}
+                        {item.span.logs && item.span.logs.length > 0 && (
+                          <span class="span-chip log-chip">
+                            {item.span.logs.length} log
+                            {item.span.logs.length === 1 ? '' : 's'}
+                          </span>
+                        )}
+                      </div>
+                      <span class="tree-node-duration">
+                        {item.span.durationMs}ms
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* ==========================================================================
+           RIGHT PANEL: DEEP-DIVE SPAN GANTT TIMELINE
+           ========================================================================== */}
+          <div class="gantt-panel">
+            <h2>Deep-Dive Gantt Timeline</h2>
+
+            <div
+              class="trace-axis-canvas"
+              style={{ '--total-canvas-height': totalCanvasHeightPx } as any}
+            >
+              {/* ABSOLUTE CRITICAL PATH BRIDGES */}
               {visibleNodesList.map((item, index) => {
-                const isCollapsed = collapsedNodes[item.id]
-                const isHovered = hoveredNodeId === item.id
-                const isSelected = selectedNode?.id === item.id
+                if (item.parentId === null) return null
+
+                const parentIndex = visibleNodesList.findIndex(
+                  (n) => n.id === item.parentId,
+                )
+                if (parentIndex === -1) return null
+
+                const parentItem = visibleNodesList[parentIndex]
+                const parentStartPct = (parentItem.span.startMs / totalMs) * 100
+                const childStartPct = (item.span.startMs / totalMs) * 100
+
+                const isBridgeHighlighted = hoveredNodeId === item.id
+
+                const bridgeStyles = {
+                  '--bridge-left': `${parentStartPct}%`,
+                  '--bridge-width': `${childStartPct - parentStartPct}%`,
+                  '--parent-index': parentIndex,
+                  '--child-index': index,
+                } as any
 
                 return (
                   <div
-                    key={`tree-${item.id}`}
-                    class={`tree-row ${isHovered ? 'is-hovered' : ''} ${isSelected ? 'is-selected' : ''}`}
-                    style={
-                      {
-                        '--row-index': index,
-                        paddingLeft: `${item.depth * 14 + 12}px`,
-                      } as any
-                    }
+                    key={`bridge-${item.id}`}
+                    class={`trace-absolute-bridge ${isBridgeHighlighted ? 'highlight-bridge' : ''}`}
+                    style={bridgeStyles}
+                  />
+                )
+              })}
+
+              {/* ABSOLUTE WATERFALL GRAPH VISUAL PILLS */}
+              {visibleNodesList.map((item, index) => {
+                const leftPercent = (item.span.startMs / totalMs) * 100
+                const widthPercent = (item.span.durationMs / totalMs) * 100
+                const isHovered = hoveredNodeId === item.id
+                const isSelected = selectedNode?.id === item.id
+
+                const rowStyles = {
+                  '--row-index': index,
+                  'z-index': '0',
+                } as any
+
+                const barStyles = {
+                  '--start-percent': `${leftPercent}%`,
+                  '--width-percent': `${Math.max(widthPercent, 1.5)}%`,
+                  '--bar-color': item.span.colorHex,
+                  '--bar-color-translucent': `${item.span.colorHex}26`,
+                } as any
+
+                return (
+                  <div
+                    key={`bar-${item.id}`}
+                    class={`timeline-row-wrapper ${isHovered ? 'is-hovered' : ''} ${isSelected ? 'is-selected' : ''}`}
+                    style={rowStyles}
                     onMouseEnter={() => setHoveredNodeId(item.id)}
                     onMouseLeave={() => setHoveredNodeId(null)}
-                    onClick={() => setSelectedId(item.id)}
+                    onClick={() => selectSpan(item.id)}
                   >
-                    {/* Guides vertical lines */}
-                    {item.depth > 0 &&
-                      Array.from({ length: item.depth }).map((_, i) => (
-                        <div
-                          key={i}
-                          class="tree-line-vertical"
-                          style={{ left: `${i * 14 + 16}px` }}
-                        />
-                      ))}
+                    <div class="waterfall-track">
+                      <div class="waterfall-bar" style={barStyles}>
+                        <span class="bar-label">{item.span.name}</span>
 
-                    {/* Node alignment elbows */}
-                    {item.depth > 0 && (
-                      <div
-                        class="tree-line-horizontal"
-                        style={{
-                          left: `${(item.depth - 1) * 14 + 16}px`,
-                          width: '10px',
-                        }}
-                      />
-                    )}
+                        {/* Micro-Event Embedded Indication Points */}
+                        <div class="bar-events-container">
+                          {item.span.events?.map((evt, evtIdx) => {
+                            const spanDuration = item.span.durationMs || 1
+                            const relativePercent =
+                              ((evt.timestampMs - item.span.startMs) /
+                                spanDuration) *
+                              100
 
-                    <div class="tree-node-content">
-                      {item.hasChildren ? (
-                        <button
-                          class={`collapse-toggle ${isCollapsed ? 'is-collapsed' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            toggleCollapse(item.id)
-                          }}
-                        >
-                          ▼
-                        </button>
-                      ) : (
-                        <span class="tree-bullet">•</span>
-                      )}
-                      <span
-                        class="tree-node-badge"
-                        style={{ backgroundColor: item.span.colorHex }}
-                      />
-                      <span class="tree-node-name">{item.span.name}</span>
-                      {item.span.isHttp && item.span.http && (
-                        <span
-                          class={`span-chip http-chip ${item.span.http.status ? httpStatusClass(item.span.http.status) : ''}`}
-                        >
-                          {item.span.http.method}
-                        </span>
-                      )}
-                      {item.span.logs && item.span.logs.length > 0 && (
-                        <span class="span-chip log-chip">
-                          {item.span.logs.length} log
-                          {item.span.logs.length === 1 ? '' : 's'}
-                        </span>
-                      )}
+                            return (
+                              <div
+                                key={evtIdx}
+                                class="span-micro-event milestone-event"
+                                style={
+                                  {
+                                    '--event-offset-pct': `${Math.max(0, Math.min(relativePercent, 100))}%`,
+                                  } as any
+                                }
+                              >
+                                <div class="event-tooltip">
+                                  <div class="tooltip-title">
+                                    {evt.name || 'Event'}
+                                  </div>
+                                  <div class="tooltip-time">
+                                    {Math.round(
+                                      evt.timestampMs - item.span.startMs,
+                                    )}{' '}
+                                    ms
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                          {item.span.logs?.map((log, logIdx) => {
+                            const spanDuration = item.span.durationMs || 1
+                            const relativePercent =
+                              ((log.timestampMs - item.span.startMs) /
+                                spanDuration) *
+                              100
+
+                            return (
+                              <div
+                                key={`log-${logIdx}`}
+                                class={`span-micro-event log-event log-event-${log.level}`}
+                                style={
+                                  {
+                                    '--event-offset-pct': `${Math.max(0, Math.min(relativePercent, 100))}%`,
+                                  } as any
+                                }
+                              >
+                                <div class="event-tooltip">
+                                  <div class="tooltip-title">
+                                    [{log.level}] {log.message}
+                                  </div>
+                                  <div class="tooltip-time">
+                                    {Math.round(
+                                      log.timestampMs - item.span.startMs,
+                                    )}{' '}
+                                    ms
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
                     </div>
-                    <span class="tree-node-duration">
-                      {item.span.durationMs}ms
-                    </span>
                   </div>
                 )
               })}
             </div>
           </div>
+
+          {selectedNode && (
+            <InspectorDrawer
+              selectedNode={selectedNode}
+              onClose={() => setSelectedId(null)}
+            />
+          )}
         </div>
 
-        {/* ==========================================================================
-           RIGHT PANEL: DEEP-DIVE SPAN GANTT TIMELINE
-           ========================================================================== */}
-        <div class="gantt-panel">
-          <h2>Deep-Dive Gantt Timeline</h2>
-
-          <div
-            class="trace-axis-canvas"
-            style={{ '--total-canvas-height': totalCanvasHeightPx } as any}
-          >
-            {/* ABSOLUTE CRITICAL PATH BRIDGES */}
-            {visibleNodesList.map((item, index) => {
-              if (item.parentId === null) return null
-
-              const parentIndex = visibleNodesList.findIndex(
-                (n) => n.id === item.parentId,
-              )
-              if (parentIndex === -1) return null
-
-              const parentItem = visibleNodesList[parentIndex]
-              const parentStartPct = (parentItem.span.startMs / totalMs) * 100
-              const childStartPct = (item.span.startMs / totalMs) * 100
-
-              const isBridgeHighlighted = hoveredNodeId === item.id
-
-              const bridgeStyles = {
-                '--bridge-left': `${parentStartPct}%`,
-                '--bridge-width': `${childStartPct - parentStartPct}%`,
-                '--parent-index': parentIndex,
-                '--child-index': index,
-              } as any
-
-              return (
-                <div
-                  key={`bridge-${item.id}`}
-                  class={`trace-absolute-bridge ${isBridgeHighlighted ? 'highlight-bridge' : ''}`}
-                  style={bridgeStyles}
-                />
-              )
-            })}
-
-            {/* ABSOLUTE WATERFALL GRAPH VISUAL PILLS */}
-            {visibleNodesList.map((item, index) => {
-              const leftPercent = (item.span.startMs / totalMs) * 100
-              const widthPercent = (item.span.durationMs / totalMs) * 100
-              const isHovered = hoveredNodeId === item.id
-              const isSelected = selectedNode?.id === item.id
-
-              const rowStyles = { '--row-index': index, 'z-index': '0' } as any
-
-              const barStyles = {
-                '--start-percent': `${leftPercent}%`,
-                '--width-percent': `${Math.max(widthPercent, 1.5)}%`,
-                '--bar-color': item.span.colorHex,
-                '--bar-color-translucent': `${item.span.colorHex}26`,
-              } as any
-
-              return (
-                <div
-                  key={`bar-${item.id}`}
-                  class={`timeline-row-wrapper ${isHovered ? 'is-hovered' : ''} ${isSelected ? 'is-selected' : ''}`}
-                  style={rowStyles}
-                  onMouseEnter={() => setHoveredNodeId(item.id)}
-                  onMouseLeave={() => setHoveredNodeId(null)}
-                  onClick={() => setSelectedId(item.id)}
-                >
-                  <div class="waterfall-track">
-                    <div class="waterfall-bar" style={barStyles}>
-                      <span class="bar-label">{item.span.name}</span>
-
-                      {/* Micro-Event Embedded Indication Points */}
-                      <div class="bar-events-container">
-                        {item.span.events?.map((evt, evtIdx) => {
-                          const spanDuration = item.span.durationMs || 1
-                          const relativePercent =
-                            ((evt.timestampMs - item.span.startMs) /
-                              spanDuration) *
-                            100
-
-                          return (
-                            <div
-                              key={evtIdx}
-                              class="span-micro-event milestone-event"
-                              style={
-                                {
-                                  '--event-offset-pct': `${Math.max(0, Math.min(relativePercent, 100))}%`,
-                                } as any
-                              }
-                            >
-                              <div class="event-tooltip">
-                                <div class="tooltip-title">
-                                  {evt.name || 'Event'}
-                                </div>
-                                <div class="tooltip-time">
-                                  {Math.round(
-                                    evt.timestampMs - item.span.startMs,
-                                  )}{' '}
-                                  ms
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                        {item.span.logs?.map((log, logIdx) => {
-                          const spanDuration = item.span.durationMs || 1
-                          const relativePercent =
-                            ((log.timestampMs - item.span.startMs) /
-                              spanDuration) *
-                            100
-
-                          return (
-                            <div
-                              key={`log-${logIdx}`}
-                              class={`span-micro-event log-event log-event-${log.level}`}
-                              style={
-                                {
-                                  '--event-offset-pct': `${Math.max(0, Math.min(relativePercent, 100))}%`,
-                                } as any
-                              }
-                            >
-                              <div class="event-tooltip">
-                                <div class="tooltip-title">
-                                  [{log.level}] {log.message}
-                                </div>
-                                <div class="tooltip-time">
-                                  {Math.round(
-                                    log.timestampMs - item.span.startMs,
-                                  )}{' '}
-                                  ms
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        <LogsPanel
+          entries={flatLogEntries}
+          highlightNodeId={selectedId}
+          onSelectSpan={selectSpan}
+        />
       </div>
-
-      <InspectorDrawer
-        selectedNode={selectedNode}
-        liveSpans={liveSpans}
-        traceStartUs={traceStartUs}
-        onClose={() => setSelectedId(null)}
-      />
     </div>
   )
 }

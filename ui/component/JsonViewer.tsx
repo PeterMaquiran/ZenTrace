@@ -19,7 +19,7 @@ export function JsonViewer({ value, collapseAfterDepth = 1 }: JsonViewerProps) {
   const parsed = parseStructuredValue(value)
 
   if (parsed === undefined) {
-    return <HighlightedRaw value={value} />
+    return <HighlightedLogValue value={value} />
   }
 
   return (
@@ -34,7 +34,7 @@ export function JsonViewer({ value, collapseAfterDepth = 1 }: JsonViewerProps) {
   )
 }
 
-function HighlightedRaw({ value }: { value: string }) {
+function HighlightedLogValue({ value }: { value: string }) {
   const tokens = tokenizeLooseJson(value)
 
   return (
@@ -256,6 +256,8 @@ function JsonNode({
     </div>
   )
 }
+
+export { HighlightedLogValue }
 
 function JsonKey({ name }: { name: string }) {
   return (

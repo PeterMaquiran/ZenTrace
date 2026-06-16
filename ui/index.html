@@ -31,7 +31,7 @@
       }
 
       .dashboard-wrapper {
-        max-width: 1400px;
+        max-width: 1680px;
         margin: 0 auto;
         background-color: var(--bg-card);
         border: 1px solid var(--border-subtle);
@@ -55,19 +55,20 @@
 
       .split-view-container {
         display: flex;
-        gap: 24px;
+        gap: 16px;
         flex: 1;
         min-height: 0;
         overflow: hidden;
       }
 
-      .split-view-container.span-open .gantt-panel {
-        display: none;
-      }
-
-      .split-view-container.span-open .span-panel {
+      .split-view-container.inspector-open .gantt-panel {
         flex: 1;
         min-width: 0;
+      }
+
+      .split-view-container.inspector-open .span-panel {
+        flex: 0 0 320px;
+        min-width: 280px;
       }
 
       h2 {
@@ -82,7 +83,7 @@
          LEFT PANEL: CASCADE TREE PIPELINE STYLES
          ========================================================================== */
       .tree-panel {
-        flex: 0 0 350px;
+        flex: 0 0 380px;
         border-right: 1px solid var(--border-subtle);
         padding-right: 16px;
         display: flex;

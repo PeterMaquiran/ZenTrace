@@ -1,5 +1,6 @@
-import { enableAutoTracing, trace } from '../../src/index'
+import { configureDevTrace, enableAutoTracing, trace } from '../../src/index'
 
+configureDevTrace({ testMode: true })
 enableAutoTracing({ logs: true, http: true })
 
 /**

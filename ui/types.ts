@@ -31,7 +31,22 @@ export interface TraceNode {
   http?: TraceHttp
   module?: string
   isHttp?: boolean
+  hasError?: boolean
+  isSlow?: boolean
+  percentOfTrace?: number
   children: TraceNode[]
+}
+
+export interface TraceTestMeta {
+  title: string
+  file: string
+  project?: string
+}
+
+export interface TraceViewData {
+  totalDurationMs: number
+  rootSpan: TraceNode
+  testMeta?: TraceTestMeta
 }
 
 export interface FlatRenderNode {
@@ -40,9 +55,4 @@ export interface FlatRenderNode {
   id: string
   parentId: string | null
   hasChildren: boolean
-}
-
-export interface TraceViewData {
-  totalDurationMs: number
-  rootSpan: TraceNode
 }

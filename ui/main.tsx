@@ -397,7 +397,7 @@ function PremiumTraceGantt() {
                             )}
                           </div>
                           <span class="tree-node-duration">
-                            {item.span.durationMs}ms
+                            {Math.trunc(item.span.durationMs)}ms
                             {usingLiveTrace &&
                             item.span.percentOfTrace !== undefined ? (
                               <span class="tree-node-percent">
@@ -417,11 +417,13 @@ function PremiumTraceGantt() {
            RIGHT PANEL: DEEP-DIVE SPAN GANTT TIMELINE
            ========================================================================== */}
               <div class="gantt-panel">
-                <h2>Deep-Dive Gantt Timeline</h2>
-                <div class="gantt-time-axis" aria-hidden="true">
-                  <span>0ms</span>
-                  <span>{Math.round(totalMs)}ms</span>
-                </div>
+                <h2>
+                  Deep-Dive Gantt Timeline
+                  <div class="gantt-time-axis" aria-hidden="true">
+                    <span>0ms</span>
+                    <span>143ms</span>
+                  </div>
+                </h2>
 
                 <div
                   class="trace-axis-canvas"
@@ -477,7 +479,10 @@ function PremiumTraceGantt() {
                       '--start-percent': `${leftPercent}%`,
                       '--width-percent': `${Math.max(widthPercent, 1.5)}%`,
                       '--bar-color': item.span.colorHex,
-                      '--bar-color-translucent': `${item.span.colorHex}26`,
+                      '--bar-color-translucent': item.span.colorHex.replace(
+                        ')',
+                        ' / 26%)',
+                      ),
                     } as any
 
                     return (

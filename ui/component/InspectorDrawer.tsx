@@ -59,7 +59,7 @@ export function InspectorDrawer({
             <div class="meta-row">
               <span class="meta-key">Total Duration</span>
               <span class="meta-val" style={{ color: span.colorHex }}>
-                {span.durationMs} ms
+                {Math.trunc(span.durationMs)} ms
               </span>
             </div>
             {span.percentOfTrace !== undefined && (
@@ -110,7 +110,7 @@ export function InspectorDrawer({
               </div>
               <div class="http-card-row">
                 <span class="meta-key">Duration</span>
-                <span class="meta-val">{span.durationMs} ms</span>
+                <span class="meta-val">{Math.trunc(span.durationMs)}ms</span>
               </div>
             </div>
           </div>

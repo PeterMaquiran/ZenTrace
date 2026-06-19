@@ -206,13 +206,14 @@
 }
 
 .gantt-time-axis {
+  flex: 1;
   display: flex;
   justify-content: space-between;
-  margin: -8px 0 12px;
   padding: 0 2px;
   font-family: monospace;
   font-size: 10px;
   color: #6b7289;
+  align-items: center;
 }
 
 .gantt-time-axis span:last-child {

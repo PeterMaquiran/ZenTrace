@@ -80,7 +80,7 @@ export async function traceFetch(
 ): Promise<Response> {
   const url = resolveUrl(input)
   const method = resolveMethod(input, init)
-  const spanName = `HTTP ${method} ${url}`
+  const spanName = `HTTP ${method}`
 
   return runSpan(
     spanName,

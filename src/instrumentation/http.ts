@@ -5,11 +5,33 @@ type HttpTraceOptions = {
   serviceName?: string
 }
 
-/** Captured before any patch — used for the actual network call. */
-const nativeFetch =
-  typeof globalThis.fetch === 'function'
-    ? globalThis.fetch.bind(globalThis)
-    : undefined
+const HTTP_TRACING_KEY = '__DEVTRACE_HTTP_TRACING__'
+
+type HttpTracingState = {
+  nativeFetch?: typeof fetch
+  installed: boolean
+}
+
+function getHttpTracingState(): HttpTracingState {
+  const globalRef = globalThis as typeof globalThis & {
+    [HTTP_TRACING_KEY]?: HttpTracingState
+  }
+
+  if (!globalRef[HTTP_TRACING_KEY]) {
+    globalRef[HTTP_TRACING_KEY] = { installed: false }
+  }
+
+  return globalRef[HTTP_TRACING_KEY]
+}
+
+function ensureNativeFetchCaptured(): typeof fetch | undefined {
+  const state = getHttpTracingState()
+  if (state.nativeFetch) return state.nativeFetch
+  if (typeof globalThis.fetch !== 'function') return undefined
+
+  state.nativeFetch = globalThis.fetch.bind(globalThis)
+  return state.nativeFetch
+}
 
 function resolveUrl(input: RequestInfo | URL): string {
   if (typeof input === 'string') return input
@@ -70,7 +92,7 @@ export async function traceFetch(
       const headers = mergeHeaders(input, init)
       inject(headers, span.context)
 
-      const fetchImpl = originalFetch ?? nativeFetch
+      const fetchImpl = getHttpTracingState().nativeFetch
       if (!fetchImpl) {
         throw new Error('fetch is not available')
       }
@@ -92,22 +114,31 @@ export async function traceFetch(
   ) as Promise<Response>
 }
 
-let installed = false
-let originalFetch: typeof fetch | undefined
-
 export function installHttpTracing(options: HttpTraceOptions = {}) {
-  if (installed || typeof globalThis.fetch !== 'function') return
-  installed = true
-  originalFetch = globalThis.fetch.bind(globalThis)
+  const nativeFetch = ensureNativeFetchCaptured()
+  if (!nativeFetch) return
 
   globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) =>
     traceFetch(input, init, options)
+
+  getHttpTracingState().installed = true
 }
 
 export function uninstallHttpTracing() {
-  if (!installed || !originalFetch) return
+  const state = getHttpTracingState()
+  if (!state.installed || !state.nativeFetch) return
 
-  globalThis.fetch = originalFetch
-  originalFetch = undefined
-  installed = false
+  globalThis.fetch = state.nativeFetch
+  state.installed = false
+}
+
+export function resetHttpTracingForTests() {
+  const state = getHttpTracingState()
+  if (state.installed && state.nativeFetch) {
+    globalThis.fetch = state.nativeFetch
+  }
+
+  delete (globalThis as typeof globalThis & { [HTTP_TRACING_KEY]?: unknown })[
+    HTTP_TRACING_KEY
+  ]
 }

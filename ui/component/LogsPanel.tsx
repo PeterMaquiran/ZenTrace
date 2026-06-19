@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'preact/hooks'
+import { useRef } from 'preact/hooks'
 
 import type { FlatLogEntry } from '../collect-logs'
 
@@ -25,15 +25,6 @@ export function LogsPanel({
   onSelectSpan,
 }: LogsPanelProps) {
   const listRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!highlightNodeId || !listRef.current) return
-
-    const first = listRef.current.querySelector(
-      `[data-span-node-id="${CSS.escape(highlightNodeId)}"]`,
-    )
-    first?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [highlightNodeId, entries])
 
   return (
     <section class="logs-panel" aria-label="Console logs">

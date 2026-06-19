@@ -15,18 +15,35 @@ export function connectDevToolsBridge(): () => void {
   if (!isDevToolsPanel()) return () => {}
 
   const tabId = chrome.devtools.inspectedWindow.tabId
-  const port = chrome.runtime.connect({ name: `devtools-panel-${tabId}` })
+  let port: chrome.runtime.Port | null = null
+  let disposed = false
 
   const onMessage = (message: { type?: string; payload?: SpanData }) => {
     if (message.type !== 'TRACE' || !message.payload) return
     window.__TRACE__.push(message.payload)
   }
 
-  port.onMessage.addListener(onMessage)
+  const connect = () => {
+    if (disposed) return
+
+    port = chrome.runtime.connect({ name: `devtools-panel-${tabId}` })
+    port.onMessage.addListener(onMessage)
+
+    port.onDisconnect.addListener(() => {
+      port?.onMessage.removeListener(onMessage)
+      port = null
+      if (!disposed) setTimeout(connect, 500)
+    })
+
+    port.postMessage({ type: 'PANEL_READY' })
+  }
+
+  connect()
 
   return () => {
-    port.onMessage.removeListener(onMessage)
-    port.disconnect()
+    disposed = true
+    port?.onMessage.removeListener(onMessage)
+    port?.disconnect()
   }
 }
 

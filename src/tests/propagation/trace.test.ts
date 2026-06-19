@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import type { Span} from '../../decorator/index';
-import { trace } from '../../decorator/index'
+import type { Span } from '../../decorator/decorator'
+import { trace } from '../../decorator/decorator'
 import { SpanStorage } from '../../storage/memory-storage'
 
 class TestService {

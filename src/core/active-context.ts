@@ -35,7 +35,10 @@ export function resolveParentSpan(stack = captureStack()): Span | undefined {
     }
   }
 
-  return best
+  // Stack markers are unreliable for anonymous callbacks (e.g. useCallback +
+  // traceFn). Fall back to the active span stack while an outer span is still
+  // in scope.
+  return best ?? getCurrentSpan()
 }
 
 export function resolveSpanFromStack(stack = captureStack()): Span | undefined {

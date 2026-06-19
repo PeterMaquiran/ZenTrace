@@ -2,7 +2,7 @@ import { runSpan, type RunSpanOptions } from '../core/run-span'
 import type { Span } from '../core/span'
 import { getDevTraceConfig } from '../testing/configure'
 
-type TraceOptions = {
+export type TraceOptions = {
   module?: string
   captureArgs?: boolean
   captureResult?: boolean

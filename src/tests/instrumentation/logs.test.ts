@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
-import { trace } from '@/decorator/index'
+import { trace } from '@/decorator/decorator'
 import { installLogCapture, uninstallLogCapture } from '@/instrumentation/logs'
 import { SpanStorage } from '@/storage/memory-storage'
 

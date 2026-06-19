@@ -2,7 +2,9 @@ export * from './core/tracer'
 export * from './core/span'
 export * from './core/context'
 export * from './core/run-span'
-export * from './decorator/index'
+export { activeSpan, getActiveSpan } from './core/active-span'
+export * from './decorator/decorator'
+export * from './decorator/function'
 export { emitTrace } from './exporters/browser/browser-export'
 export {
   enableAutoTracing,

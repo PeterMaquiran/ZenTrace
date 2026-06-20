@@ -1,7 +1,5 @@
 import type { TraceSummary } from '../trace-model'
 
-import '../style/TraceList.scss'
-
 type TraceListPanelProps = {
   traces: TraceSummary[]
   selectedRootId?: string | null
@@ -65,29 +63,31 @@ export function TraceListPanel({
                 class={`trace-list-item ${isActive ? 'is-active' : ''}`}
                 onClick={() => onSelectTrace(trace.rootId)}
               >
-                <div class="trace-list-item-top">
-                  <span class="trace-list-name">{trace.name}</span>
-                  <span class="trace-list-duration">
-                    {Math.round(trace.durationMs)}ms
-                  </span>
-                </div>
-                <div class="trace-list-item-meta">
-                  <span>
-                    {formatTraceTime(trace.timestampUs, traceStartUs)}
-                  </span>
-                  <span>{trace.spanCount} spans</span>
-                </div>
-                {trace.testTitle ? (
-                  <div class="trace-list-test" title={trace.testTitle}>
-                    {trace.testTitle}
+                <div class="trace-list-item-body">
+                  <div class="trace-list-item-top">
+                    <span class="trace-list-name">{trace.name}</span>
                   </div>
-                ) : null}
-                {trace.hasError ? (
-                  <span class="trace-list-error">failed</span>
-                ) : null}
-                {isFull ? (
-                  <span class="trace-list-open-hint">Open trace →</span>
-                ) : null}
+                  <div class="trace-list-item-meta">
+                    <span>
+                      {formatTraceTime(trace.timestampUs, traceStartUs)}
+                    </span>
+                    <span>{trace.spanCount} spans</span>
+                    <span>{Math.round(trace.durationMs)}ms</span>
+                  </div>
+                  {trace.testTitle ? (
+                    <div class="trace-list-test" title={trace.testTitle}>
+                      {trace.testTitle}
+                    </div>
+                  ) : null}
+                  {trace.hasError ? (
+                    <span class="trace-list-error">Failed</span>
+                  ) : null}
+                </div>
+                <div class="trace-list-item-trailing">
+                  <span class="trace-list-chevron" aria-hidden="true">
+                    ›
+                  </span>
+                </div>
               </button>
             )
           })

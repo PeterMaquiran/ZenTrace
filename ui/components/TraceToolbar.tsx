@@ -1,10 +1,8 @@
-import type { ComponentChildren } from 'preact'
-
 import type { TraceStats, TraceFilter } from '../trace-stats'
 import { formatTestLabel } from '../trace-stats'
 import type { TraceViewData } from '../types'
 
-import '../style/TraceToolbar.scss'
+import { SegmentedControl } from './SegmentedControl'
 
 type TraceToolbarProps = {
   usingLiveTrace: boolean
@@ -13,6 +11,8 @@ type TraceToolbarProps = {
   stats?: TraceStats
   traceCount?: number
   filter?: TraceFilter
+  spanSearch?: string
+  onSpanSearchChange?: (query: string) => void
   onFilterChange?: (filter: TraceFilter) => void
   onBack?: () => void
   onClear: () => void
@@ -25,6 +25,8 @@ export function TraceToolbar({
   stats,
   traceCount = 0,
   filter = 'all',
+  spanSearch = '',
+  onSpanSearchChange,
   onFilterChange,
   onBack,
   onClear,
@@ -32,12 +34,21 @@ export function TraceToolbar({
   const testLabel = formatTestLabel(testMeta)
   const isPicker = mode === 'picker'
 
+  const filterOptions: { value: TraceFilter; label: string }[] = [
+    { value: 'all', label: 'All' },
+    {
+      value: 'errors',
+      label: `Errors${stats && stats.errorCount > 0 ? ` (${stats.errorCount})` : ''}`,
+    },
+    { value: 'slow', label: 'Slow' },
+  ]
+
   return (
     <header class="trace-toolbar">
       <div class="trace-toolbar-primary">
         {onBack ? (
           <button type="button" class="trace-back-btn" onClick={onBack}>
-            ← All traces
+            ‹ All Traces
           </button>
         ) : null}
         <div class="trace-toolbar-brand">
@@ -91,32 +102,39 @@ export function TraceToolbar({
       ) : null}
 
       <div class="trace-toolbar-actions">
+        {!isPicker && onSpanSearchChange ? (
+          <label class="trace-search-field">
+            <span class="trace-search-icon" aria-hidden="true">
+              ⌕
+            </span>
+            <input
+              type="search"
+              class="trace-search-input"
+              placeholder="Filter spans…"
+              value={spanSearch}
+              onInput={(event) =>
+                onSpanSearchChange((event.target as HTMLInputElement).value)
+              }
+            />
+            {spanSearch ? (
+              <button
+                type="button"
+                class="trace-search-clear"
+                aria-label="Clear span filter"
+                onClick={() => onSpanSearchChange('')}
+              >
+                ×
+              </button>
+            ) : null}
+          </label>
+        ) : null}
         {!isPicker && onFilterChange ? (
-          <div
-            class="trace-filter-group"
-            role="group"
-            aria-label="Trace filters"
-          >
-            <FilterButton
-              active={filter === 'all'}
-              onClick={() => onFilterChange('all')}
-            >
-              All
-            </FilterButton>
-            <FilterButton
-              active={filter === 'errors'}
-              onClick={() => onFilterChange('errors')}
-            >
-              Errors
-              {stats && stats.errorCount > 0 ? ` (${stats.errorCount})` : ''}
-            </FilterButton>
-            <FilterButton
-              active={filter === 'slow'}
-              onClick={() => onFilterChange('slow')}
-            >
-              Slow
-            </FilterButton>
-          </div>
+          <SegmentedControl
+            value={filter}
+            options={filterOptions}
+            onChange={onFilterChange}
+            ariaLabel="Trace filters"
+          />
         ) : null}
         <button
           type="button"
@@ -145,25 +163,5 @@ function Metric({
       <span class="trace-metric-label">{label}</span>
       <span class="trace-metric-value">{value}</span>
     </div>
-  )
-}
-
-function FilterButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: ComponentChildren
-}) {
-  return (
-    <button
-      type="button"
-      class={`trace-filter-btn ${active ? 'is-active' : ''}`}
-      onClick={onClick}
-    >
-      {children}
-    </button>
   )
 }

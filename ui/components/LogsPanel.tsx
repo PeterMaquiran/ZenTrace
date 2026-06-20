@@ -1,9 +1,6 @@
-import { useRef } from 'preact/hooks'
-
 import type { FlatLogEntry } from '../collect-logs'
 
 import { LogMessage } from './LogMessage'
-import '../style/LogsPanel.scss'
 
 function LogLevelBadge({ level }: { level: FlatLogEntry['log']['level'] }) {
   return <span class={`log-level log-level-${level}`}>{level}</span>
@@ -16,16 +13,9 @@ function formatTraceTime(timestampMs: number): string {
 type LogsPanelProps = {
   entries: FlatLogEntry[]
   highlightNodeId: string | null
-  onSelectSpan?: (nodeId: string) => void
 }
 
-export function LogsPanel({
-  entries,
-  highlightNodeId,
-  onSelectSpan,
-}: LogsPanelProps) {
-  const listRef = useRef<HTMLDivElement>(null)
-
+export function LogsPanel({ entries, highlightNodeId }: LogsPanelProps) {
   return (
     <section class="logs-panel" aria-label="Console logs">
       <div class="logs-panel-header">
@@ -35,7 +25,7 @@ export function LogsPanel({
         </span>
       </div>
 
-      <div class="logs-panel-list" ref={listRef}>
+      <div class="logs-panel-list">
         {entries.length === 0 ? (
           <p class="logs-panel-empty">No console output captured yet.</p>
         ) : (
@@ -46,7 +36,6 @@ export function LogsPanel({
               class={`logs-panel-item log-item-${entry.log.level} ${
                 highlightNodeId === entry.nodeId ? 'is-highlighted' : ''
               }`}
-              onClick={() => onSelectSpan?.(entry.nodeId)}
             >
               <div class="logs-panel-item-header">
                 <div class="logs-panel-span">

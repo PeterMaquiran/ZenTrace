@@ -1,0 +1,95 @@
+@import './tokens';
+
+/* Xcode-inspired syntax palette */
+.json-viewer {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.json-viewer-raw {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--label-primary);
+  margin: 0;
+}
+
+.json-block {
+  display: block;
+}
+
+.json-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+  padding-left: calc(var(--json-depth, 0) * 14px + 4px);
+  min-height: 20px;
+}
+
+.json-line-toggle {
+  align-items: center;
+}
+
+.json-toggle {
+  width: 16px;
+  height: 16px;
+  margin: 0 2px 0 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--label-tertiary);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--system-blue);
+  }
+}
+
+.json-key,
+.json-ident {
+  color: #9cdcfe;
+}
+
+.json-plain {
+  color: var(--label-primary);
+}
+
+.json-string {
+  color: #ce9178;
+  word-break: break-word;
+}
+
+.json-number {
+  color: #b5cea8;
+}
+
+.json-boolean {
+  color: #569cd6;
+}
+
+.json-null {
+  color: var(--label-tertiary);
+  font-style: italic;
+}
+
+.json-punct {
+  color: var(--label-tertiary);
+}
+
+.json-preview {
+  margin-left: 6px;
+  color: var(--label-tertiary);
+  font-style: italic;
+  font-size: 11px;
+}

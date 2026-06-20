@@ -34,7 +34,7 @@ test.describe('DevTrace Chrome extension', () => {
         page.getByRole('heading', { name: 'Span Tree' }),
       ).toBeVisible()
       await expect(
-        page.getByRole('heading', { name: 'Deep-Dive Gantt Timeline' }),
+        page.getByRole('heading', { name: /Timeline/ }),
       ).toBeVisible()
       await expect(page.locator('.trace-toolbar')).toBeVisible()
       await expect(page.locator('.dashboard-wrapper')).toBeVisible()
@@ -76,10 +76,10 @@ test.describe('DevTrace Chrome extension', () => {
       await page.locator('.tree-row', { hasText: 'frontend' }).first().click()
 
       await expect(
-        page.locator('.trace-filter-btn', { hasText: 'Errors' }),
+        page.locator('.segmented-option', { hasText: 'Errors' }),
       ).toBeVisible()
       await expect(
-        page.locator('.trace-filter-btn', { hasText: 'Slow' }),
+        page.locator('.segmented-option', { hasText: 'Slow' }),
       ).toBeVisible()
       await expect(page.locator('.trace-clear-btn')).toBeDisabled()
     } finally {

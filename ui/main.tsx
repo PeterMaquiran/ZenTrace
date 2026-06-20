@@ -535,12 +535,16 @@ function PremiumTraceGantt() {
                               )}
                             </div>
                             <span class="tree-node-duration">
-                              {Math.trunc(item.span.durationMs)}ms
+                              {item.parentId
+                                ? `${Math.trunc(item.span.durationMs)}ms`
+                                : `${Math.trunc(timelineTotalMs)}ms`}
                               {item.span.percentOfTrace !== undefined ? (
                                 <span class="tree-node-percent">
                                   {' '}
                                   (
-                                  {formatTracePercent(item.span.percentOfTrace)}
+                                  {item.parentId
+                                    ? `${formatTracePercent(item.span.percentOfTrace)}`
+                                    : '100'}
                                   %)
                                 </span>
                               ) : null}
@@ -654,7 +658,9 @@ function PremiumTraceGantt() {
                                 style={
                                   {
                                     '--start-percent': `${leftPercent}%`,
-                                    '--width-percent': `${widthPercent}%`,
+                                    '--width-percent': item.parentId
+                                      ? `${widthPercent}%`
+                                      : '100%',
                                     '--bar-color': item.span.colorHex,
                                     '--bar-color-translucent':
                                       item.span.colorHex.startsWith('#')

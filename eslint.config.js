@@ -21,6 +21,7 @@ export default tseslint.config(
       'node_modules',
       'src/tests/example.test.ts',
       'test/mocks/mock-exporter.ts',
+      'ui/demo/app.ts',
     ],
   },
 

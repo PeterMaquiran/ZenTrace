@@ -1,3 +1,4 @@
+import { spanTimelineMetrics } from './timeline-metrics'
 import type { FlatRenderNode, TraceNode, TraceViewData } from './types'
 
 export type TraceFilter = 'all' | 'errors' | 'slow'
@@ -59,10 +60,11 @@ export function enrichNodesWithPerformance(
   slowThresholdMs: number,
 ): FlatRenderNode[] {
   return nodes.map((node) => {
-    const percentOfTrace =
-      totalDurationMs > 0
-        ? Math.round((node.span.durationMs / totalDurationMs) * 100)
-        : 0
+    const { percentOfTrace } = spanTimelineMetrics(
+      node.span.startMs,
+      node.span.durationMs,
+      totalDurationMs,
+    )
 
     return {
       ...node,

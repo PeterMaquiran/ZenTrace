@@ -1,8 +1,8 @@
 import { httpStatusClass } from '../span-details'
+import { formatTracePercent } from '../timeline-metrics'
 import type { FlatRenderNode } from '../types'
 
 import { JsonViewer } from './JsonViewer'
-import './../style/InspectorDrawers.scss'
 
 interface InspectorDrawerProps {
   selectedNode: FlatRenderNode
@@ -37,7 +37,12 @@ export function InspectorDrawer({
             </span>
           )}
         </div>
-        <button type="button" class="close-drawer-btn" onClick={onClose}>
+        <button
+          type="button"
+          class="close-drawer-btn"
+          onClick={onClose}
+          aria-label="Close inspector"
+        >
           ×
         </button>
       </div>
@@ -49,7 +54,7 @@ export function InspectorDrawer({
           </div>
         )}
 
-        <div>
+        <div class="drawer-section">
           <h4 class="section-heading">Execution Overview</h4>
           <div class="meta-grid">
             <div class="meta-row">
@@ -58,14 +63,14 @@ export function InspectorDrawer({
             </div>
             <div class="meta-row">
               <span class="meta-key">Total Duration</span>
-              <span class="meta-val" style={{ color: span.colorHex }}>
-                {Math.trunc(span.durationMs)} ms
-              </span>
+              <span class="meta-val">{Math.trunc(span.durationMs)} ms</span>
             </div>
             {span.percentOfTrace !== undefined && (
               <div class="meta-row">
                 <span class="meta-key">Share of Trace</span>
-                <span class="meta-val">{span.percentOfTrace}%</span>
+                <span class="meta-val">
+                  {formatTracePercent(span.percentOfTrace)}%
+                </span>
               </div>
             )}
             {span.module && (
@@ -82,10 +87,10 @@ export function InspectorDrawer({
         </div>
 
         {http && (
-          <div>
+          <div class="drawer-section">
             <h4 class="section-heading">HTTP Request</h4>
-            <div class="http-card">
-              <div class="http-card-row">
+            <div class="meta-grid">
+              <div class="meta-row">
                 <span class="meta-key">Method</span>
                 <span
                   class={`http-method-pill ${httpStatusClass(http.status)}`}
@@ -93,22 +98,22 @@ export function InspectorDrawer({
                   {http.method}
                 </span>
               </div>
-              <div class="http-card-row http-url-row">
+              <div class="meta-row">
                 <span class="meta-key">URL</span>
-                <code class="http-url" title={http.url}>
+                <code class="http-url meta-val" title={http.url}>
                   {http.url}
                 </code>
               </div>
-              <div class="http-card-row">
+              <div class="meta-row">
                 <span class="meta-key">Status</span>
                 <span
-                  class={`http-status-value ${httpStatusClass(http.status)}`}
+                  class={`meta-val http-status-value ${httpStatusClass(http.status)}`}
                 >
                   {http.status ?? '…'}
                   {http.statusText ? ` ${http.statusText}` : ''}
                 </span>
               </div>
-              <div class="http-card-row">
+              <div class="meta-row">
                 <span class="meta-key">Duration</span>
                 <span class="meta-val">{Math.trunc(span.durationMs)}ms</span>
               </div>
@@ -116,7 +121,7 @@ export function InspectorDrawer({
           </div>
         )}
 
-        <div>
+        <div class="drawer-section">
           <h4 class="section-heading">Input Arguments</h4>
           {span.input ? (
             <JsonViewer value={span.input} collapseAfterDepth={1} />
@@ -125,7 +130,7 @@ export function InspectorDrawer({
           )}
         </div>
 
-        <div>
+        <div class="drawer-section">
           <h4 class="section-heading">Output Result</h4>
           {span.output ? (
             <JsonViewer value={span.output} collapseAfterDepth={1} />
@@ -134,7 +139,7 @@ export function InspectorDrawer({
           )}
         </div>
 
-        <div>
+        <div class="drawer-section">
           <h4 class="section-heading">
             Lifecycle Events{' '}
             {milestones.length > 0 ? `(${milestones.length})` : ''}

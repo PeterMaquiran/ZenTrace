@@ -181,20 +181,45 @@ class CheckoutService {
  * UI DEMO
  * -------------------------
  */
+/**
+ * -------------------------
+ * UI DEMO (CONCURRENCY CONFLICT TEST)
+ * -------------------------
+ */
 
 const service = new CheckoutService()
 
+// Create the UI elements programmatically if they aren't in your HTML
+if (!document.getElementById('run-concurrent')) {
+  const container =
+    document.getElementById('run-checkout')?.parentElement || document.body
+
+  const concurrentBtn = document.createElement('button')
+  concurrentBtn.id = 'run-concurrent'
+  concurrentBtn.textContent = '⚡ Run 3 Concurrent Checkouts'
+  concurrentBtn.style.marginLeft = '10px'
+  concurrentBtn.style.padding = '8px 12px'
+  concurrentBtn.style.background = '#e67e22'
+  concurrentBtn.style.color = 'white'
+  concurrentBtn.style.border = 'none'
+  concurrentBtn.style.borderRadius = '4px'
+  concurrentBtn.style.cursor = 'pointer'
+
+  container.appendChild(concurrentBtn)
+}
+
 const status = document.getElementById('status')
 const runButton = document.getElementById('run-checkout')
+const concurrentButton = document.getElementById('run-concurrent')
 
+// Standard Single Run
 async function runDemo() {
   if (!runButton || !status) return
-
   runButton.setAttribute('disabled', 'true')
-  status.textContent = 'Running deep traced checkout...'
+  status.textContent = 'Running single traced checkout...'
 
   try {
-    const result = await service.runCheckout(`order-${Date.now()}`)
+    const result = await service.runCheckout(`order-single-${Date.now()}`)
     status.textContent = `Done: ${JSON.stringify(result, null, 2)}`
   } catch (error) {
     status.textContent = `Failed: ${String(error)}`
@@ -203,9 +228,40 @@ async function runDemo() {
   }
 }
 
-runButton?.addEventListener('click', () => {
-  void runDemo()
-})
+// CONCURRENT BURST TEST
+async function runConcurrentTest() {
+  if (!concurrentButton || !status) return
+  concurrentButton.setAttribute('disabled', 'true')
+  status.textContent = '🔥 Blasting 3 concurrent checkouts simultaneously...'
 
-status.textContent =
-  'Open Chrome DevTools → DevTrace panel → click Run checkout'
+  const startTime = Date.now()
+
+  try {
+    // Fire 3 checkouts at the exact same time
+    const promises = [
+      service.runCheckout(`CONCURRENT-A-${startTime}`),
+      service.runCheckout(`CONCURRENT-B-${startTime}`),
+      service.runCheckout(`CONCURRENT-C-${startTime}`),
+    ]
+
+    const results = await Promise.allSettled(promises)
+
+    status.textContent =
+      `Finished Concurrency Test. Results:\n` +
+      results.map((r, i) => `Job ${i + 1}: ${r.status}`).join('\n') +
+      `\n\nCheck DevTools to see if trace IDs or parent spans crossed wires!`
+  } catch (error) {
+    status.textContent = `Orchestrator exploded: ${String(error)}`
+  } finally {
+    concurrentButton.removeAttribute('disabled')
+  }
+}
+
+runButton?.addEventListener('click', () => void runDemo())
+concurrentButton?.addEventListener('click', () => void runConcurrentTest())
+
+if (status) {
+  status.style.whiteSpace = 'pre-wrap'
+  status.textContent =
+    'Open Chrome DevTools → DevTrace panel → click "Run 3 Concurrent Checkouts"'
+}

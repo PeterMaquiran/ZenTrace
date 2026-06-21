@@ -1,3 +1,4 @@
 node scripts/check-branch.js &&
-pnpm test:unit &&
+pnpm test:package &&
+pnpm test:extension &&
 echo "Husky is running 🚀."

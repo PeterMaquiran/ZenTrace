@@ -5,10 +5,14 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "lib": ["DOM", "ES2022"],
-
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@ui/*": ["ui/*"]
     },
 
     "skipLibCheck": true

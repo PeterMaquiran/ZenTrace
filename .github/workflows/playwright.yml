@@ -1,0 +1,29 @@
+name: Playwright Tests
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm install -g pnpm && pnpm install
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+      - name: Build extension panel bundle
+        run: pnpm run build:extension
+      - name: Install Xvfb for headless browser display
+        run: sudo apt-get install -y xvfb
+      - name: Run extension tests
+        run: xvfb-run pnpm run test:extension
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

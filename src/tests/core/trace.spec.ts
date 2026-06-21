@@ -39,4 +39,25 @@ describe('trace decorator', () => {
     const result = await service.returnSpan()
     expect(result).toBeInstanceOf(Span)
   })
+
+  it('injects span as the last argument', async () => {
+    let receivedSpan: unknown
+
+    class SpanService {
+      @trace({ captureArgs: true })
+      async handle(value: string, span?: Span) {
+        receivedSpan = span
+        span?.addAttribute('operation', 'handle')
+        return value
+      }
+    }
+
+    const svc = new SpanService()
+    await svc.handle('ok')
+
+    expect(receivedSpan).toBeDefined()
+    expect((receivedSpan as Span).attributes).toMatchObject({
+      operation: 'handle',
+    })
+  })
 })

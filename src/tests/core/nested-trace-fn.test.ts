@@ -3,24 +3,28 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { traceFn } from '../../decorator/function'
 import { SpanStorage } from '../../storage/memory-storage'
 
+import type { Span } from '@/index'
+
 describe('nested traceFn propagation', () => {
   beforeEach(() => {
     SpanStorage.clear()
   })
 
-  it('links nested traceFn calls when outer callback is anonymous', async () => {
+  it('links nested traceFn calls when parent span is passed explicitly', async () => {
     async function removeState(versionId: string, stateId: string) {
       return { versionId, stateId }
     }
 
-    const onBeforeDelete = traceFn(async ({ ids }: { ids: string[] }, span) => {
-      span?.addAttribute('operation', 'onBeforeDelete')
+    const onBeforeDelete = traceFn(
+      async ({ ids }: { ids: string[] }, span: Span) => {
+        span?.addAttribute('operation', 'onBeforeDelete')
 
-      for (const id of ids) {
-        await traceFn(removeState, span)('v1', id)
-      }
-      return true
-    })
+        for (const id of ids) {
+          await traceFn(removeState, span)('v1', id)
+        }
+        return true
+      },
+    )
 
     await onBeforeDelete({ ids: ['a', 'b'] })
 

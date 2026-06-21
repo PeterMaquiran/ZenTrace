@@ -22,6 +22,7 @@ export default tseslint.config(
       'src/tests/example.test.ts',
       'test/mocks/mock-exporter.ts',
       'ui/demo/app.ts',
+      'src/util/span-args.ts',
     ],
   },
 

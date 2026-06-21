@@ -1,7 +1,11 @@
 import { runSpan, runSpanSync } from '../core/run-span'
-import { Span } from '../core/span'
 import type { Span as SpanType } from '../core/span'
 import { getDevTraceConfig } from '../testing/configure'
+import {
+  isSpan,
+  receivesSpanParam,
+  resolveManualPropagation,
+} from '../util/span-args'
 
 import type { TraceOptions } from './decorator'
 
@@ -22,10 +26,6 @@ type TraceFnReturn<
   TResult,
   TSpan extends boolean | undefined,
 > = TSpan extends true ? SpanType : TResult
-
-function isSpan(value: unknown): value is SpanType {
-  return value instanceof Span
-}
 
 function resolveTraceFnArgs(
   optionsOrParent?: TraceFnRuntimeOptions | SpanType,
@@ -54,9 +54,9 @@ function buildRunSpanOptions(
   }
 }
 
-function invokeWithSpan<TArgs extends unknown[], TResult>(
-  fn: (...args: any[]) => any,
-  args: TArgs,
+function invokeWithSpan<TResult>(
+  fn: (...args: unknown[]) => TResult,
+  args: unknown[],
   span: SpanType,
   injectSpan: boolean,
 ): TResult {
@@ -140,41 +140,41 @@ export function traceFn<
   fn: any,
   optionsOrParent?: TraceFnOptions<TSpan> | SpanType,
   maybeOptions?: TraceFnOptions<TSpan>,
-) {
+): any {
   let options: TraceFnRuntimeOptions
-  let parentSpan: SpanType | undefined
+  let factoryParentSpan: SpanType | undefined
 
   if (isSpan(optionsOrParent)) {
-    parentSpan = optionsOrParent
+    factoryParentSpan = optionsOrParent
     options = (maybeOptions ?? {}) as TraceFnRuntimeOptions
   } else {
-    ;({ options, parentSpan } = resolveTraceFnArgs(optionsOrParent))
+    ;({ options, parentSpan: factoryParentSpan } = resolveTraceFnArgs(
+      optionsOrParent as TraceFnRuntimeOptions | undefined,
+    ))
   }
 
   const name = options.name ?? fn.name ?? 'anonymous'
-
-  const injectSpan = /span/i.test(fn.toString()) // fallback heuristic
-
+  const injectSpan = receivesSpanParam(fn)
   const isAsync = fn.constructor.name === 'AsyncFunction'
 
-  const runOptions = (args: unknown[]) =>
-    buildRunSpanOptions(args, options, parentSpan)
+  return (...args: TArgs) => {
+    const { callArgs, parentSpan: callParentSpan } =
+      resolveManualPropagation(args)
+    const parentSpan = factoryParentSpan ?? callParentSpan
+    const runOptions = buildRunSpanOptions(callArgs, options, parentSpan)
 
-  if (isAsync) {
-    return (...args: TArgs) => {
+    if (isAsync) {
       return runSpan(
         name,
-        (span) => invokeWithSpan<TArgs, TResult>(fn, args, span, injectSpan),
-        runOptions(args),
-      )
+        (span) => invokeWithSpan(fn, callArgs, span, injectSpan),
+        runOptions,
+      ) as Promise<TraceFnReturn<TResult, TSpan>>
     }
-  }
 
-  return (...args: TArgs) => {
     return runSpanSync(
       name,
-      (span) => invokeWithSpan<TArgs, TResult>(fn, args, span, injectSpan),
-      runOptions(args),
-    )
+      (span) => invokeWithSpan(fn, callArgs, span, injectSpan),
+      runOptions,
+    ) as TraceFnReturn<TResult, TSpan>
   }
 }

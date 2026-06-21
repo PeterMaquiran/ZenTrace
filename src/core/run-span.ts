@@ -2,14 +2,8 @@ import { emitTrace } from '../exporters/browser/browser-export'
 import { SpanStorage } from '../storage/memory-storage'
 import { getTraceSession, SESSION_TAGS } from '../testing/session'
 
-import {
-  enterSpan,
-  leaveSpan,
-  markSpan,
-  resolveParentSpan,
-} from './active-context'
+import { enterSpan, leaveSpan, markSpan } from './active-context'
 import type { Span } from './span'
-import { captureStack } from './stack'
 import { Tracer } from './tracer'
 
 export type RunSpanOptions = {
@@ -19,7 +13,7 @@ export type RunSpanOptions = {
   returnSpan?: boolean
   serviceName?: string
   marker?: string
-  /** Explicit parent when stack-based resolution is unreliable (e.g. useCallback). */
+  /** Explicit parent — omit to start a new root trace (no automatic stack linking). */
   parentSpan?: Span
 }
 
@@ -32,8 +26,7 @@ type SpanRun = {
 }
 
 function beginSpanRun(name: string, options: RunSpanOptions): SpanRun {
-  const entryStack = captureStack()
-  const parent = options.parentSpan ?? resolveParentSpan(entryStack)
+  const parent = options.parentSpan
   const tracer = options.serviceName
     ? new Tracer(options.serviceName)
     : defaultTracer

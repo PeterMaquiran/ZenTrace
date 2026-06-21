@@ -1,6 +1,7 @@
 import { runSpan, type RunSpanOptions } from '../core/run-span'
 import type { Span } from '../core/span'
 import { getDevTraceConfig } from '../testing/configure'
+import { resolveManualPropagation } from '../util/span-args'
 
 export type TraceOptions = {
   module?: string
@@ -30,15 +31,18 @@ export function trace(options: TraceOptions = {}) {
       const shouldCaptureResult =
         options.captureResult ?? defaults.captureResult
 
+      const { callArgs, parentSpan } = resolveManualPropagation(args)
+
       return runSpan(
         propertyKey,
-        (span) => original.apply(this, [...args, span]),
+        (span) => original.apply(this, [...callArgs, span]),
         {
           module: options.module,
-          captureArgs: shouldCaptureArgs ? args : undefined,
+          captureArgs: shouldCaptureArgs ? callArgs : undefined,
           captureResult: shouldCaptureResult,
           returnSpan: options.span,
           marker,
+          parentSpan,
         } satisfies RunSpanOptions,
       )
     }

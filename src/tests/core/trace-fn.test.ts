@@ -136,4 +136,56 @@ describe('traceFn', () => {
       expect(child.context.traceId).toBe(parent?.context.traceId)
     }
   })
+
+  it('uses parent span from the last call argument', async () => {
+    async function removeState(versionId: string, stateId: string) {
+      return { versionId, stateId }
+    }
+
+    const onBeforeDelete = traceFn(
+      async ({ ids }: { ids: string[] }, span: Span) => {
+        span?.addAttribute('operation', 'onBeforeDelete')
+
+        for (const id of ids) {
+          await traceFn(removeState, span)('v1', id)
+        }
+        return true
+      },
+    )
+
+    await onBeforeDelete({ ids: ['a', 'b'] })
+
+    const spans = SpanStorage.getAll()
+    const parent = spans.find(
+      (span) => span.attributes['operation'] === 'onBeforeDelete',
+    )
+    const children = spans.filter((span) => span.name === 'removeState')
+
+    expect(children.length).toBe(2)
+    for (const child of children) {
+      expect(child.context.parentId).toBe(parent?.context.spanId)
+    }
+  })
+
+  it('does not link nested calls without an explicit parent span', async () => {
+    async function removeState(versionId: string, stateId: string) {
+      return { versionId, stateId }
+    }
+
+    const onBeforeDelete = traceFn(async ({ ids }: { ids: string[] }) => {
+      for (const id of ids) {
+        await traceFn(removeState)('v1', id)
+      }
+      return true
+    })
+
+    await onBeforeDelete({ ids: ['a', 'b'] })
+
+    const spans = SpanStorage.getAll()
+    expect(spans.length).toBe(3)
+
+    for (const span of spans) {
+      expect(span.context.parentId).toBeNull()
+    }
+  })
 })

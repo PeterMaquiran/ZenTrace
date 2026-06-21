@@ -19,6 +19,8 @@ export type RunSpanOptions = {
   returnSpan?: boolean
   serviceName?: string
   marker?: string
+  /** Explicit parent when stack-based resolution is unreliable (e.g. useCallback). */
+  parentSpan?: Span
 }
 
 const defaultTracer = new Tracer('devtrace')
@@ -31,7 +33,7 @@ type SpanRun = {
 
 function beginSpanRun(name: string, options: RunSpanOptions): SpanRun {
   const entryStack = captureStack()
-  const parent = resolveParentSpan(entryStack)
+  const parent = options.parentSpan ?? resolveParentSpan(entryStack)
   const tracer = options.serviceName
     ? new Tracer(options.serviceName)
     : defaultTracer

@@ -30,13 +30,17 @@ export function trace(options: TraceOptions = {}) {
       const shouldCaptureResult =
         options.captureResult ?? defaults.captureResult
 
-      return runSpan(propertyKey, async () => original.apply(this, args), {
-        module: options.module,
-        captureArgs: shouldCaptureArgs ? args : undefined,
-        captureResult: shouldCaptureResult,
-        returnSpan: options.span,
-        marker,
-      } satisfies RunSpanOptions)
+      return runSpan(
+        propertyKey,
+        (span) => original.apply(this, [...args, span]),
+        {
+          module: options.module,
+          captureArgs: shouldCaptureArgs ? args : undefined,
+          captureResult: shouldCaptureResult,
+          returnSpan: options.span,
+          marker,
+        } satisfies RunSpanOptions,
+      )
     }
 
     return descriptor

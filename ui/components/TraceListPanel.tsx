@@ -53,44 +53,46 @@ export function TraceListPanel({
               : 'Run your app to capture traces.'}
           </p>
         ) : (
-          traces.map((trace) => {
-            const isActive = trace.rootId === selectedRootId
+          traces
+            .filter((trace) => !trace.name.startsWith('HTTP'))
+            .map((trace) => {
+              const isActive = trace.rootId === selectedRootId
 
-            return (
-              <button
-                key={trace.rootId}
-                type="button"
-                class={`trace-list-item ${isActive ? 'is-active' : ''}`}
-                onClick={() => onSelectTrace(trace.rootId)}
-              >
-                <div class="trace-list-item-body">
-                  <div class="trace-list-item-top">
-                    <span class="trace-list-name">{trace.name}</span>
-                  </div>
-                  <div class="trace-list-item-meta">
-                    <span>
-                      {formatTraceTime(trace.timestampUs, traceStartUs)}
-                    </span>
-                    <span>{trace.spanCount} spans</span>
-                    <span>{Math.round(trace.durationMs)}ms</span>
-                  </div>
-                  {trace.testTitle ? (
-                    <div class="trace-list-test" title={trace.testTitle}>
-                      {trace.testTitle}
+              return (
+                <button
+                  key={trace.rootId}
+                  type="button"
+                  class={`trace-list-item ${isActive ? 'is-active' : ''}`}
+                  onClick={() => onSelectTrace(trace.rootId)}
+                >
+                  <div class="trace-list-item-body">
+                    <div class="trace-list-item-top">
+                      <span class="trace-list-name">{trace.name}</span>
                     </div>
-                  ) : null}
-                  {trace.hasError ? (
-                    <span class="trace-list-error">Failed</span>
-                  ) : null}
-                </div>
-                <div class="trace-list-item-trailing">
-                  <span class="trace-list-chevron" aria-hidden="true">
-                    ›
-                  </span>
-                </div>
-              </button>
-            )
-          })
+                    <div class="trace-list-item-meta">
+                      <span>
+                        {formatTraceTime(trace.timestampUs, traceStartUs)}
+                      </span>
+                      <span>{trace.spanCount} spans</span>
+                      <span>{Math.round(trace.durationMs)}ms</span>
+                    </div>
+                    {trace.testTitle ? (
+                      <div class="trace-list-test" title={trace.testTitle}>
+                        {trace.testTitle}
+                      </div>
+                    ) : null}
+                    {trace.hasError ? (
+                      <span class="trace-list-error">Failed</span>
+                    ) : null}
+                  </div>
+                  <div class="trace-list-item-trailing">
+                    <span class="trace-list-chevron" aria-hidden="true">
+                      ›
+                    </span>
+                  </div>
+                </button>
+              )
+            })
         )}
       </div>
     </section>

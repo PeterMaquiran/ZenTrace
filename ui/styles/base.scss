@@ -1,0 +1,42 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  background-color: var(--bg-primary);
+  color: var(--label-secondary);
+  margin: 0;
+}
+
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  color: var(--label-primary);
+  letter-spacing: -0.01em;
+}
+
+h3,
+h4 {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+}

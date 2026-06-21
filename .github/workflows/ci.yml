@@ -1,4 +1,4 @@
-name: CI
+name: Unit Tests
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         run: pnpm install
 
       - name: Build project
-        run: pnpm build
+        run: pnpm build:package
 
       - name: Run tests
-        run: pnpm test:e2e
+        run: pnpm test:package

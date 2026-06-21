@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "DevTrace",
+  "version": "1.0",
+  "devtools_page": "devtools.html",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["inject.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

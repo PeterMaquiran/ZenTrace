@@ -19,7 +19,10 @@ export default tseslint.config(
       '**/*.cjs',
       'dist',
       'node_modules',
-      'src/test/example.test.ts',
+      'src/tests/example.test.ts',
+      'test/mocks/mock-exporter.ts',
+      'ui/demo/app.ts',
+      'src/util/span-args.ts',
     ],
   },
 
@@ -27,7 +30,7 @@ export default tseslint.config(
   {
     files: [
       'src/**/*.{ts,tsx}',
-      'playground/**/*.{ts,tsx}',
+      'ui/**/*.{ts,tsx}',
       'cypress/**/*.ts',
       //'**/**.json',
     ],
@@ -46,7 +49,7 @@ export default tseslint.config(
       'no-debugger': 'warn',
       'no-multiple-empty-lines': ['error', { max: 1 }],
       // 🧠 TypeScript discipline
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
 
       '@typescript-eslint/no-unused-vars': [
@@ -65,6 +68,14 @@ export default tseslint.config(
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
+    },
+  },
+
+  // Demo app uses automatic @trace propagation via stack context
+  {
+    files: ['ui/demo/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
 

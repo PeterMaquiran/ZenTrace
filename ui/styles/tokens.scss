@@ -1,0 +1,59 @@
+:root {
+  /* Surfaces — Apple dark mode */
+  --bg-primary: #1c1c1e;
+  --bg-secondary: #18191d;
+  --bg-tertiary: #3a3a3c;
+  --bg-elevated: #212226;
+  --bg-grouped: #1c1c1e;
+
+  /* Labels */
+  --label-primary: #ffffff;
+  --label-secondary: rgba(235, 235, 245, 0.6);
+  --label-tertiary: rgba(235, 235, 245, 0.3);
+  --label-quaternary: rgba(235, 235, 245, 0.18);
+
+  /* Separators & fills */
+  --separator: #38383a;
+  --separator-opaque: #38383a;
+  --fill-quaternary: rgba(118, 118, 128, 0.18);
+  --fill-tertiary: rgba(118, 118, 128, 0.24);
+  --fill-secondary: rgba(120, 120, 128, 0.32);
+
+  /* System tints */
+  --system-blue: #0a84ff;
+  --system-green: #30d158;
+  --system-orange: #ff9f0a;
+  --system-red: #ff453a;
+  --system-purple: #bf5af2;
+  --system-teal: #64d2ff;
+
+  /* Semantic aliases */
+  --text-primary: var(--label-primary);
+  --text-secondary: var(--label-secondary);
+  --text-tertiary: var(--label-tertiary);
+  --border-subtle: var(--separator);
+  --accent-blue: var(--system-blue);
+  --bg-main: var(--bg-primary);
+  --bg-card: var(--bg-secondary);
+  --bg-popup: var(--bg-elevated);
+
+  /* Layout */
+  --row-height: 32px;
+  --row-hover-bg: rgba(255, 255, 255, 0.04);
+  --row-selected-bg: rgba(10, 132, 255, 0.12);
+  --tree-line-color: rgba(255, 255, 255, 0.08);
+  --line-color: rgba(10, 132, 255, 0.25);
+
+  /* Typography */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto,
+    sans-serif;
+  --font-mono: 'SF Mono', ui-monospace, Menlo, Monaco, Consolas, monospace;
+
+  /* Radii & motion */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+}

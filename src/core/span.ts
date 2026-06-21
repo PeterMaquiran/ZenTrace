@@ -1,4 +1,9 @@
+import { emitTrace } from '../exporters/browser/browser-export'
+import { recordSpanLog } from '../instrumentation/log-record'
+import type { ConsoleLevel } from '../instrumentation/logs'
+
 import { TraceContext } from './context'
+import { formatLogArgs } from './stack'
 import type { SpanData } from './types'
 
 export class Span {
@@ -74,6 +79,34 @@ export class Span {
       'x-parent-id': this.context.parentId || '',
       traceparent: `00-${this.context.traceId}-${this.context.spanId}-01`,
     }
+  }
+
+  get console(): Record<ConsoleLevel, (...args: unknown[]) => void> {
+    const levels: ConsoleLevel[] = ['log', 'info', 'warn', 'error']
+
+    const scoped: Partial<Record<ConsoleLevel, (...args: unknown[]) => void>> =
+      {}
+
+    for (const level of levels) {
+      scoped[level] = (...args: unknown[]) => {
+        const message = formatLogArgs(args)
+
+        recordSpanLog(this as any, level, message)
+
+        // Optional: also emit immediately
+        const durationMs = this.attributes.duration_ms
+          ? Number(this.attributes.duration_ms)
+          : undefined
+
+        alert('emitting span 2')
+        emitTrace(this.toJSON(durationMs ? durationMs * 1000 : undefined))
+
+        // still call real console
+        ;(console as any)[level](...args)
+      }
+    }
+
+    return scoped as Record<ConsoleLevel, (...args: unknown[]) => void>
   }
 }
 

@@ -6,7 +6,7 @@ import { emitTrace } from '../exporters/browser/browser-export'
 
 import { recordSpanLog } from './log-record'
 
-type ConsoleLevel = 'log' | 'info' | 'warn' | 'error'
+export type ConsoleLevel = 'log' | 'info' | 'warn' | 'error'
 
 const levels: ConsoleLevel[] = ['log', 'info', 'warn', 'error']
 const originals = new Map<ConsoleLevel, (...args: unknown[]) => void>()

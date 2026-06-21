@@ -50,3 +50,37 @@ export function getActiveSpans(): Span[] {
 export function getSpanMarker(span: Span): string | undefined {
   return getTraceRuntime().spanMarkers.get(span)
 }
+
+const PARENT_HEADER = 'x-devtrace-parent-span-id'
+
+export function extractParentSpanFromHeaders(
+  headers: Headers | Record<string, string>,
+): Span | undefined {
+  let spanId: string | null | undefined
+
+  if (headers instanceof Headers) {
+    spanId = headers.get(PARENT_HEADER)
+  } else {
+    // handle case-insensitive headers
+    spanId =
+      headers[PARENT_HEADER] ??
+      headers[PARENT_HEADER.toLowerCase()] ??
+      headers[PARENT_HEADER.toUpperCase()]
+  }
+
+  if (!spanId) return
+
+  const runtime = getTraceRuntime()
+  const span = runtime.spanStack.find((span) => span.context.spanId === spanId)
+
+  // ✅ cleanup header (important)
+  if (headers instanceof Headers) {
+    headers.delete(PARENT_HEADER)
+  } else {
+    delete headers[PARENT_HEADER]
+    delete headers[PARENT_HEADER.toLowerCase()]
+    delete headers[PARENT_HEADER.toUpperCase()]
+  }
+
+  return span
+}

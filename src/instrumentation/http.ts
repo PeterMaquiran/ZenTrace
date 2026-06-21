@@ -1,8 +1,12 @@
 import { runSpan } from '../core/run-span'
+import { extractParentSpanFromHeaders } from '../core/trace-runtime'
 import { inject } from '../util/inject'
+
+import type { Span } from '@/core/span'
 
 type HttpTraceOptions = {
   serviceName?: string
+  parentSpan?: Span
 }
 
 const HTTP_TRACING_KEY = '__DEVTRACE_HTTP_TRACING__'
@@ -81,6 +85,9 @@ export async function traceFetch(
   const url = resolveUrl(input)
   const method = resolveMethod(input, init)
   const spanName = `HTTP ${method}`
+  const headers = mergeHeaders(input, init)
+
+  const parentSpan = extractParentSpanFromHeaders(headers) || options.parentSpan
 
   return runSpan(
     spanName,
@@ -89,7 +96,6 @@ export async function traceFetch(
       span.addAttribute('http.url', url)
       span.addAttribute('component', 'http')
 
-      const headers = mergeHeaders(input, init)
       inject(headers, span.context)
 
       const fetchImpl = getHttpTracingState().nativeFetch
@@ -110,7 +116,7 @@ export async function traceFetch(
 
       return response
     },
-    { serviceName: options.serviceName, module: 'http' },
+    { serviceName: options.serviceName, module: 'http', parentSpan },
   ) as Promise<Response>
 }
 

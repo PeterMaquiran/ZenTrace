@@ -1,12 +1,12 @@
 # Playwright integration
 
-DevTrace correlates browser spans with the active Playwright test and surfaces
+TraceFlow correlates browser spans with the active Playwright test and surfaces
 args, timing, logs, and HTTP calls in the DevTools panel.
 
 ## 1. Enable tracing in the app under test
 
 ```ts
-import { configureDevTrace, enableAutoTracing } from 'DevTrace'
+import { configureDevTrace, enableAutoTracing } from 'TraceFlow'
 
 configureDevTrace({ testMode: true })
 enableAutoTracing({ logs: true, http: true })
@@ -19,7 +19,7 @@ default so the inspector shows function arguments and return values.
 
 ```ts
 import { test } from '@playwright/test'
-import { attachDevTrace } from 'DevTrace'
+import { attachDevTrace } from 'TraceFlow'
 
 test.beforeEach(async ({ page }, testInfo) => {
   await attachDevTrace(page, testInfo)
@@ -28,20 +28,20 @@ test.beforeEach(async ({ page }, testInfo) => {
 
 Root spans receive these tags:
 
-- `devtrace.test.title`
-- `devtrace.test.file`
-- `devtrace.test.project`
-- `devtrace.session.id`
+- `TraceFlow.test.title`
+- `TraceFlow.test.file`
+- `TraceFlow.test.project`
+- `TraceFlow.session.id`
 
-The DevTrace toolbar displays the active test name and file.
+The TraceFlow toolbar displays the active test name and file.
 
-## 3. Open the DevTrace panel
+## 3. Open the TraceFlow panel
 
-1. Load the DevTrace Chrome extension (`pnpm build:extension`).
+1. Load the TraceFlow Chrome extension (`pnpm build:extension`).
 2. Run your Playwright test with a headed browser (`headless: false` is required
    for extensions today).
 3. Open Chrome DevTools on the page under test.
-4. Select the **DevTrace** panel.
+4. Select the **TraceFlow** panel.
 
 ## 4. Debug workflow
 
@@ -61,7 +61,7 @@ Use **Clear trace** between tests to reset the panel.
 Cypress can set the same session object before the app loads:
 
 ```ts
-import { createSessionFromTestInfo, devTraceSessionInitScript } from 'DevTrace'
+import { createSessionFromTestInfo, devTraceSessionInitScript } from 'TraceFlow'
 
 const session = createSessionFromTestInfo({
   title: 'checkout completes',

@@ -1,10 +1,13 @@
 {
   "name": "zentrace",
   "description": "See what your code actually does.",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -21,6 +24,7 @@
     "pnpm": "11.0.9"
   },
   "scripts": {
+    "prepublishOnly": "pnpm run build:package",
     "lint:fix": "eslint --fix",
     "format": "prettier . --write",
     "dev:ui": "vite ui",

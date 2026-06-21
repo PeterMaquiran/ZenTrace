@@ -27,4 +27,4 @@ jobs:
         run: pnpm build:package
 
       - name: Run tests
-        run: pnpm test:e2e
+        run: pnpm test:package

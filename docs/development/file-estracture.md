@@ -1,4 +1,4 @@
-devtrace/
+TraceFlow/
 ├── package.json
 ├── tsconfig.json
 ├── README.md
@@ -33,8 +33,8 @@ devtrace/
 │ │ │ ├── otel.exporter.ts
 │ │ │ └── otel.transformer.ts
 │ │ │
-│ │ ├── devtrace/
-│ │ │ ├── devtrace.exporter.ts # local UI bridge
+│ │ ├── TraceFlow/
+│ │ │ ├── TraceFlow.exporter.ts # local UI bridge
 │ │ │ └── websocket.ts # WS server/client
 │ │ │
 │ │ └── index.ts # export all exporters

@@ -1,10 +1,10 @@
-# 🚀 DevTrace — See What Your Code _Actually_ Does
+# 🚀 TraceFlow — See What Your Code _Actually_ Does
 
 > A zero-config JavaScript tracing debugger that shows function calls, arguments, and async flow in real time.
 
 ---
 
-## ✨ Why DevTrace?
+## ✨ Why TraceFlow?
 
 Debugging JavaScript is painful when:
 
@@ -13,7 +13,7 @@ Debugging JavaScript is painful when:
 - Performance issues are invisible
 - You’re stuck adding `console.log` everywhere
 
-**DevTrace fixes this.**
+**TraceFlow fixes this.**
 
 It lets you **see your code execution as a trace**, not guess it.
 
@@ -35,7 +35,7 @@ It lets you **see your code execution as a trace**, not guess it.
 ### Your code
 
 ```ts
-import { trace } from 'devtrace'
+import { trace } from 'traceflow'
 
 class UserService {
   @trace()
@@ -74,7 +74,7 @@ getUser (120ms)
 ## 🚀 Installation
 
 ```bash
-npm install devtrace
+npm install traceflow
 ```
 
 ---
@@ -82,7 +82,7 @@ npm install devtrace
 ## ⚡ Quick Start
 
 ```ts
-import { trace } from "devtrace"
+import { trace } from "traceflow"
 
 @trace()
 async function checkout(userId: string) {
@@ -92,7 +92,7 @@ async function checkout(userId: string) {
 }
 ```
 
-Run your app and open the DevTrace UI.
+Run your app and open the TraceFlow UI.
 
 ---
 
@@ -109,7 +109,7 @@ Run your app and open the DevTrace UI.
 
 ## 🧠 How It Works
 
-DevTrace:
+TraceFlow:
 
 1. Wraps your functions with a decorator
 2. Captures:
@@ -151,7 +151,7 @@ Trace failing tests and inspect inputs.
 
 ### 🔗 Context propagation
 
-DevTrace automatically links function calls into a single trace:
+TraceFlow automatically links function calls into a single trace:
 
 ```ts
 @trace()
@@ -183,7 +183,7 @@ async function B(traceCtx?: TraceContext) {}
 
 #### ⚙️ How it works
 
-- DevTrace injects the current `traceCtx` as the **last argument**
+- TraceFlow injects the current `traceCtx` as the **last argument**
 - If a context is already provided, it is reused
 - All calls remain part of the **same trace tree**
 
@@ -219,7 +219,7 @@ async function B(traceCtx?: TraceContext) {}
 
 ## 🤝 Philosophy
 
-DevTrace is not a replacement for production observability tools.
+TraceFlow is not a replacement for production observability tools.
 
 It’s built for:
 

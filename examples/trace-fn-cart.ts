@@ -8,7 +8,7 @@ function sleep(ms: number) {
 }
 
 const loadItems = traceFn(
-  async (userId: string, _span?: Span) => {
+  async (userId: string, span?: Span) => {
     await sleep(45)
     console.log('loaded cart items', userId)
     return [
@@ -25,10 +25,7 @@ const loadItems = traceFn(
 )
 
 const applyCoupon = traceFn(
-  async (
-    items: { sku: string; price: number; qty: number }[],
-    _span?: Span,
-  ) => {
+  async (items: { sku: string; price: number; qty: number }[], span?: Span) => {
     await sleep(35)
     const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
     return { items, subtotal, discount: 10, total: subtotal - 10 }
@@ -42,9 +39,9 @@ const applyCoupon = traceFn(
 )
 
 const finalizeCart = traceFn(
-  async (userId: string, _span?: Span) => {
-    const items = await loadItems(userId, _span)
-    const priced = await applyCoupon(items, _span)
+  async (userId: string, span?: Span) => {
+    const items = await loadItems(userId, span)
+    const priced = await applyCoupon(items, span)
     console.info('cart ready', { userId, total: priced.total })
     return priced
   },

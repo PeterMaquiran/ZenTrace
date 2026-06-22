@@ -1,5 +1,5 @@
 import type { Span } from '../../core/span'
-import { getDevTraceConfig } from '../../testing/configure'
+import { getZenTraceConfig } from '../../testing/configure'
 import { resolveManualPropagation } from '../../util/span-args'
 import { runSpan, type RunSpanOptions } from '../run-span'
 
@@ -28,7 +28,7 @@ export function trace(
     const marker = `${className}.${propertyKey}`
 
     descriptor.value = async function (...args: unknown[]) {
-      const defaults = getDevTraceConfig()
+      const defaults = getZenTraceConfig()
       const shouldCaptureArgs = options.captureArgs ?? defaults.captureArgs
       const shouldCaptureResult =
         options.captureResult ?? defaults.captureResult

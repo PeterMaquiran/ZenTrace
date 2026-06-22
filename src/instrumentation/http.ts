@@ -9,7 +9,7 @@ type HttpTraceOptions = {
   parentSpan?: Span
 }
 
-const HTTP_TRACING_KEY = '__DEVTRACE_HTTP_TRACING__'
+const HTTP_TRACING_KEY = '__ZENTRACE_HTTP_TRACING__'
 
 type HttpTracingState = {
   nativeFetch?: typeof fetch

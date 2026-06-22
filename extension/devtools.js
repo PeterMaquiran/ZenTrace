@@ -1,1 +1,1 @@
-chrome.devtools.panels.create('DevTrace', '', 'panel.html', function (panel) {})
+chrome.devtools.panels.create('ZenTrace', '', 'panel.html', function (panel) {})

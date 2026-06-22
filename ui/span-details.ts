@@ -3,7 +3,7 @@ import type { SpanData } from '../src/core/types'
 import type { TraceHttp, TraceLog, TraceEvent } from './types'
 
 const LOG_PATTERN = /^\[(log|info|warn|error)\]\s*(.*)$/s
-const SPAN_LOGS_TAG = 'devtrace.logs'
+const SPAN_LOGS_TAG = 'zentrace.logs'
 
 type StoredSpanLog = {
   level: string
@@ -39,7 +39,7 @@ export function extractLogs(span: SpanData, traceStartUs: number): TraceLog[] {
   const storedLogs = readStoredLogs(span.tags?.[SPAN_LOGS_TAG])
 
   // Runtime writes each console line to annotations, log.* tags, and
-  // devtrace.logs. Use one canonical source so the UI does not show duplicates.
+  // zentrace.logs. Use one canonical source so the UI does not show duplicates.
   if (storedLogs.length > 0) {
     return storedLogs
       .map((entry) => ({

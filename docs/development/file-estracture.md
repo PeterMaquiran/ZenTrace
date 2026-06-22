@@ -1,4 +1,4 @@
-TraceFlow/
+ZenTrace/
 ├── package.json
 ├── tsconfig.json
 ├── README.md
@@ -33,8 +33,8 @@ TraceFlow/
 │ │ │ ├── otel.exporter.ts
 │ │ │ └── otel.transformer.ts
 │ │ │
-│ │ ├── TraceFlow/
-│ │ │ ├── TraceFlow.exporter.ts # local UI bridge
+│ │ ├── ZenTrace/
+│ │ │ ├── ZenTrace.exporter.ts # local UI bridge
 │ │ │ └── websocket.ts # WS server/client
 │ │ │
 │ │ └── index.ts # export all exporters

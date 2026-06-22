@@ -1,5 +1,5 @@
 import type { Span as SpanType } from '../../core/span'
-import { getDevTraceConfig } from '../../testing/configure'
+import { getZenTraceConfig } from '../../testing/configure'
 import {
   isSpan,
   receivesSpanParam,
@@ -41,7 +41,7 @@ function buildRunSpanOptions(
   options: TraceFnRuntimeOptions,
   parentSpan?: SpanType,
 ) {
-  const defaults = getDevTraceConfig()
+  const defaults = getZenTraceConfig()
 
   return {
     module: options.module,

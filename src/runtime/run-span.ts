@@ -17,7 +17,7 @@ export type RunSpanOptions = {
   parentSpan?: Span
 }
 
-const defaultTracer = new Tracer('devtrace')
+const defaultTracer = new Tracer('zentrace')
 
 type SpanRun = {
   span: Span

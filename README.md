@@ -1,10 +1,10 @@
-# zentrace
+# ZenTrace
 
 Trace function calls, async flow, logs, and HTTP — see it in Chrome DevTools.
 
 [![npm version](https://img.shields.io/npm/v/zentrace.svg)](https://www.npmjs.com/package/zentrace)
 
-![DevTrace dashboard — span tree, Gantt timeline, and inspector](https://raw.githubusercontent.com/PeterMaquiran/ZenTrace/main/docs/assets/dashboard.png)
+![ZenTrace dashboard — span tree, Gantt timeline, and inspector](https://raw.githubusercontent.com/PeterMaquiran/ZenTrace/main/docs/assets/dashboard.png)
 
 ## The problem
 
@@ -12,9 +12,9 @@ Async JavaScript is hard to debug. A bug in `checkout()` might come from `valida
 
 So you add `console.log`. Then more. You still can't see timing, parent/child calls, or what each function received and returned.
 
-## What zentrace gives you
+## What ZenTrace gives you
 
-Decorate your functions with `@trace()`. Run your app. Open the **DevTrace** panel in Chrome DevTools.
+Decorate your functions with `@trace()`. Run your app. Open the **ZenTrace** panel in Chrome DevTools.
 
 Every execution becomes a **trace** you can click through:
 
@@ -32,9 +32,9 @@ npm install zentrace
 ```
 
 ```ts
-import { configureDevTrace, enableAutoTracing, trace } from 'zentrace'
+import { configureZenTrace, enableAutoTracing, trace } from 'zentrace'
 
-configureDevTrace({ testMode: true })
+configureZenTrace({ testMode: true })
 enableAutoTracing({ logs: true, http: true })
 ```
 
@@ -199,7 +199,7 @@ class ApiService {
 
     const res = await fetch('https://api.example.com/todos/1', {
       headers: {
-        'x-devtrace-parent-span-id': span.context.spanId,
+        'x-zentrace-parent-span-id': span.context.spanId,
       },
     })
 
@@ -222,13 +222,13 @@ console.info → "todo loaded 200"    (linked to loadTodo)
 ## Global config
 
 ```ts
-import { configureDevTrace } from 'zentrace'
+import { configureZenTrace } from 'zentrace'
 
 // dev / test defaults: capture args + results everywhere
-configureDevTrace({ testMode: true })
+configureZenTrace({ testMode: true })
 
 // or set explicitly
-configureDevTrace({
+configureZenTrace({
   captureArgs: true,
   captureResult: true,
   slowThresholdMs: 100, // highlights slow spans in the UI
@@ -266,7 +266,7 @@ const parseConfig = traceFn((raw: string) => JSON.parse(raw), {
 import {
   trace, // method decorator
   traceFn, // wrap any function
-  configureDevTrace,
+  configureZenTrace,
   enableAutoTracing,
   disableAutoTracing,
   getActiveSpan,

@@ -69,6 +69,6 @@ describe('log capture', () => {
     expect(
       span?.events.some((event) => event.value.includes('after await')),
     ).toBe(true)
-    expect(span?.attributes['devtrace.logs']).toContain('after await')
+    expect(span?.attributes['zentrace.logs']).toContain('after await')
   })
 })

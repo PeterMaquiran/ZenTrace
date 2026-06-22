@@ -1,11 +1,11 @@
 import {
-  configureDevTrace,
+  configureZenTrace,
   enableAutoTracing,
   Span,
   trace,
 } from '../../src/index'
 
-configureDevTrace({ testMode: true })
+configureZenTrace({ testMode: true })
 enableAutoTracing({ logs: true, http: true })
 
 /**
@@ -160,7 +160,7 @@ class CheckoutService {
 
     await fetch('https://jsonplaceholder.typicode.com/todos/1', {
       headers: {
-        'x-devtrace-parent-span-id': span!.context.spanId,
+        'x-zentrace-parent-span-id': span!.context.spanId,
       },
     })
 
@@ -272,5 +272,5 @@ concurrentButton?.addEventListener('click', () => void runConcurrentTest())
 if (status) {
   status.style.whiteSpace = 'pre-wrap'
   status.textContent =
-    'Open Chrome DevTools → DevTrace panel → click "Run 3 Concurrent Checkouts"'
+    'Open Chrome DevTools → ZenTrace panel → click "Run 3 Concurrent Checkouts"'
 }

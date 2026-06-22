@@ -1,6 +1,6 @@
 import type { Span } from '../core/span'
 
-const RUNTIME_KEY = '__DEVTRACE_RUNTIME__'
+const RUNTIME_KEY = '__ZENTRACE_RUNTIME__'
 
 export type TraceRuntime = {
   spanStack: Span[]
@@ -51,7 +51,7 @@ export function getSpanMarker(span: Span): string | undefined {
   return getTraceRuntime().spanMarkers.get(span)
 }
 
-const PARENT_HEADER = 'x-devtrace-parent-span-id'
+const PARENT_HEADER = 'x-zentrace-parent-span-id'
 
 export function extractParentSpanFromHeaders(
   headers: Headers | Record<string, string>,

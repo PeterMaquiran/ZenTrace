@@ -10,7 +10,7 @@ function sleep(ms: number) {
 class OrderService {
   @trace({ module: 'orders', captureArgs: true, captureResult: true })
   async createOrder(orderId: string, span?: Span) {
-    console.info('creating order', orderId)
+    span?.console.info('creating order', orderId)
 
     const [price, stock, shipping] = await Promise.all([
       this.calculatePrice(orderId, span!),
@@ -18,7 +18,7 @@ class OrderService {
       this.estimateShipping(orderId, span!),
     ])
 
-    console.log('order assembled', { orderId, total: price.total })
+    span?.console.log('order assembled', { orderId, total: price.total })
     return { orderId, price, stock, shipping }
   }
 
@@ -44,7 +44,10 @@ class OrderService {
 const orders = new OrderService()
 
 export function runParallelOrderExample(
-  orderId = `order-parallel-${Date.now()}`,
+  baseOrderId = `order-parallel-${Date.now()}`,
 ) {
-  return orders.createOrder(orderId)
+  return Promise.all([
+    orders.createOrder(`${baseOrderId}-A`),
+    orders.createOrder(`${baseOrderId}-B`),
+  ])
 }

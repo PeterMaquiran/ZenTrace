@@ -148,7 +148,7 @@ export function runCheckoutExample(orderId = `order-${Date.now()}`) {
 
 ## Example: parallel async
 
-Copy `[examples/parallel-order.ts](examples/parallel-order.ts)` → call `runParallelOrderExample()`.
+Copy [examples/parallel-order.ts](examples/parallel-order.ts) → call `runParallelOrderExample()`.
 
 ```ts
 import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
@@ -209,7 +209,7 @@ export function runParallelOrderExample(
 
 ## Example: errors + retry
 
-Copy `[examples/error-retry.ts](examples/error-retry.ts)` → call `runErrorRetryExample()`. Use the **Errors** filter in the toolbar.
+Copy [examples/error-retry.ts](examples/error-retry.ts) → call `runErrorRetryExample()`. Use the **Errors** filter in the toolbar.
 
 `examples/error-retry.ts` — click to expand
 
@@ -290,7 +290,7 @@ export function runErrorRetryExample(invoiceId = `inv-${Date.now()}`) {
 
 ## Example: `traceFn()`
 
-Copy `[examples/trace-fn-cart.ts](examples/trace-fn-cart.ts)` → call `runTraceFnCartExample()`.
+Copy [examples/trace-fn-cart.ts](examples/trace-fn-cart.ts) → call`runTraceFnCartExample()`.
 
 ```ts
 import { configureZenTrace, enableAutoTracing, Span, traceFn } from 'zentrace'
@@ -405,13 +405,13 @@ pnpm build:extension
 
 ## All examples
 
-| File                                                                   | Run function                      | What you see                             |
-| ---------------------------------------------------------------------- | --------------------------------- | ---------------------------------------- |
-| `[examples/checkout.ts](examples/checkout.ts)`                         | `runCheckoutExample()`            | Deep tree, HTTP, parallel branches, logs |
-| `[examples/parallel-order.ts](examples/parallel-order.ts)`             | `runParallelOrderExample()`       | Three sibling spans on timeline          |
-| `[examples/error-retry.ts](examples/error-retry.ts)`                   | `runErrorRetryExample()`          | Failed attempts, retries, error logs     |
-| `[examples/trace-fn-cart.ts](examples/trace-fn-cart.ts)`               | `runTraceFnCartExample()`         | `traceFn()` without classes              |
-| `[examples/concurrent-checkouts.ts](examples/concurrent-checkouts.ts)` | `runConcurrentCheckoutsExample()` | Three separate root traces               |
+| File                                                                 | Run function                      | What you see                             |
+| -------------------------------------------------------------------- | --------------------------------- | ---------------------------------------- |
+| [examples/checkout.ts](examples/checkout.ts)                         | `runCheckoutExample()`            | Deep tree, HTTP, parallel branches, logs |
+| [examples/parallel-order.ts](examples/parallel-order.ts)             | `runParallelOrderExample()`       | Three sibling spans on timeline          |
+| [examples/error-retry.ts](examples/error-retry.ts)                   | `runErrorRetryExample()`          | Failed attempts, retries, error logs     |
+| [examples/trace-fn-cart.ts](examples/trace-fn-cart.ts)               | `runTraceFnCartExample()`         | `traceFn()` without classes              |
+| [examples/concurrent-checkouts.ts](examples/concurrent-checkouts.ts) | `runConcurrentCheckoutsExample()` | Three separate root traces               |
 
 ---
 

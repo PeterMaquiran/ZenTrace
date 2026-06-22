@@ -8,8 +8,8 @@ export {
   type TraceSession,
 } from './session'
 export {
-  configureDevTrace,
-  getDevTraceConfig,
-  resetDevTraceConfig,
-  type DevTraceConfig,
+  configureZenTrace,
+  getZenTraceConfig,
+  resetZenTraceConfig,
+  type ZenTraceConfig,
 } from './configure'

@@ -1,11 +1,11 @@
 window.addEventListener('message', (event) => {
   if (event.source !== window) return
-  if (event.data?.source !== 'devtrace' || event.data?.type !== 'TRACE_EVENT') {
+  if (event.data?.source !== 'zentrace' || event.data?.type !== 'TRACE_EVENT') {
     return
   }
 
   chrome.runtime.sendMessage({
-    type: 'DEVTRACE_SPAN',
+    type: 'ZENTRACE_SPAN',
     payload: event.data.payload,
   })
 })

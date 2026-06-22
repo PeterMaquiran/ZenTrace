@@ -1,14 +1,14 @@
 # Playwright integration
 
-TraceFlow correlates browser spans with the active Playwright test and surfaces
+ZenTrace correlates browser spans with the active Playwright test and surfaces
 args, timing, logs, and HTTP calls in the DevTools panel.
 
 ## 1. Enable tracing in the app under test
 
 ```ts
-import { configureDevTrace, enableAutoTracing } from 'TraceFlow'
+import { configureZenTrace, enableAutoTracing } from 'zentrace'
 
-configureDevTrace({ testMode: true })
+configureZenTrace({ testMode: true })
 enableAutoTracing({ logs: true, http: true })
 ```
 
@@ -19,29 +19,29 @@ default so the inspector shows function arguments and return values.
 
 ```ts
 import { test } from '@playwright/test'
-import { attachDevTrace } from 'TraceFlow'
+import { attachZenTrace } from 'zentrace/playwright'
 
 test.beforeEach(async ({ page }, testInfo) => {
-  await attachDevTrace(page, testInfo)
+  await attachZenTrace(page, testInfo)
 })
 ```
 
 Root spans receive these tags:
 
-- `TraceFlow.test.title`
-- `TraceFlow.test.file`
-- `TraceFlow.test.project`
-- `TraceFlow.session.id`
+- `zentrace.test.title`
+- `zentrace.test.file`
+- `zentrace.test.project`
+- `zentrace.session.id`
 
-The TraceFlow toolbar displays the active test name and file.
+The ZenTrace toolbar displays the active test name and file.
 
-## 3. Open the TraceFlow panel
+## 3. Open the ZenTrace panel
 
-1. Load the TraceFlow Chrome extension (`pnpm build:extension`).
+1. Load the ZenTrace Chrome extension (`pnpm build:extension`).
 2. Run your Playwright test with a headed browser (`headless: false` is required
    for extensions today).
 3. Open Chrome DevTools on the page under test.
-4. Select the **TraceFlow** panel.
+4. Select the **ZenTrace** panel.
 
 ## 4. Debug workflow
 
@@ -61,7 +61,10 @@ Use **Clear trace** between tests to reset the panel.
 Cypress can set the same session object before the app loads:
 
 ```ts
-import { createSessionFromTestInfo, devTraceSessionInitScript } from 'TraceFlow'
+import {
+  createSessionFromTestInfo,
+  zenTraceSessionInitScript,
+} from 'zentrace/playwright'
 
 const session = createSessionFromTestInfo({
   title: 'checkout completes',
@@ -70,7 +73,7 @@ const session = createSessionFromTestInfo({
 
 cy.visit('/checkout', {
   onBeforeLoad(win) {
-    win.eval(devTraceSessionInitScript(session))
+    win.eval(zenTraceSessionInitScript(session))
   },
 })
 ```

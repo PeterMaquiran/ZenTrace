@@ -1,4 +1,4 @@
-# 🚀 TraceFlow Core — Implementation Architecture
+# 🚀 ZenTrace Core — Implementation Architecture
 
 ## 🧠 Goal
 
@@ -7,7 +7,7 @@ Design a tracing core that:
 - ✅ Works out of the box (zero config)
 - ✅ Supports manual + automatic propagation
 - ✅ Is exporter-agnostic (Zipkin, Jaeger, OpenTelemetry, New Relic)
-- ✅ Powers a local TraceFlow UI (no external dashboards required)
+- ✅ Powers a local ZenTrace UI (no external dashboards required)
 
 ---
 
@@ -20,7 +20,7 @@ Split into 4 layers:
 1. **Core (Tracing Engine)**
 2. **Context Propagation**
 3. **Exporters (pluggable)**
-4. **UI Bridge (local TraceFlow UI)**
+4. **UI Bridge (local ZenTrace UI)**
 
 ---
 
@@ -190,7 +190,7 @@ All exporters implement:
 
 ## Built-in Exporters
 
-### 1. TraceFlow UI Exporter (default)
+### 1. ZenTrace UI Exporter (default)
 
 - sends spans to local UI (WebSocket or in-memory)
 - zero config
@@ -227,12 +227,12 @@ User can implement:
 Allow:
 
 ```
-exporters: [TraceFlowUI, zipkin, otel]
+exporters: [ZenTraceUI, zipkin, otel]
 ```
 
 ---
 
-# 🖥️ 6. TraceFlow UI Bridge
+# 🖥️ 6. ZenTrace UI Bridge
 
 ## Purpose
 
@@ -375,7 +375,7 @@ Optional:
 
 This design gives you:
 
-✅ Local-first debugging (TraceFlow UI)
+✅ Local-first debugging (ZenTrace UI)
 ✅ Industry compatibility (Zipkin / OTEL / Jaeger)
 ✅ Manual + automatic propagation
 ✅ Zero-config developer experience
@@ -384,11 +384,11 @@ This design gives you:
 
 # 🎯 Positioning
 
-TraceFlow becomes:
+ZenTrace becomes:
 
 > “The frontend of observability”
 
-- TraceFlow UI → local understanding
+- ZenTrace UI → local understanding
 - Exporters → production observability
 
 ---

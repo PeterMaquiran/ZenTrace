@@ -23,7 +23,7 @@ describe('extractLogs', () => {
       tags: {
         'log.info': 'checkout started order-1',
         'log.log': 'checkout completed {"orderId":"order-1"}',
-        'devtrace.logs': JSON.stringify([
+        'zentrace.logs': JSON.stringify([
           {
             level: 'info',
             message: 'checkout started order-1',
@@ -47,7 +47,7 @@ describe('extractLogs', () => {
     ])
   })
 
-  it('falls back to annotations when devtrace.logs is missing', () => {
+  it('falls back to annotations when zentrace.logs is missing', () => {
     const span: SpanData = {
       id: 'auth',
       name: 'validateToken',

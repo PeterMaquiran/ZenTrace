@@ -14,24 +14,24 @@ export {
   installHttpTracing,
 } from './instrumentation/index'
 export {
-  configureDevTrace,
-  getDevTraceConfig,
-  resetDevTraceConfig,
+  configureZenTrace,
+  getZenTraceConfig,
+  resetZenTraceConfig,
   clearTraceSession,
   createTraceSession,
   extractTestMeta,
   getTraceSession,
   setTraceSession,
   SESSION_TAGS,
-  type DevTraceConfig,
+  type ZenTraceConfig,
   type TraceSession,
 } from './testing/index'
 export {
-  attachDevTrace,
+  attachZenTrace,
   createSessionFromTestInfo,
-  devTraceSessionInitScript,
-  type DevTracePage,
-  type DevTraceTestInfo,
+  zenTraceSessionInitScript,
+  type ZenTracePage,
+  type ZenTraceTestInfo,
 } from './playwright/index'
 
 // export * from "./propagation/headers";

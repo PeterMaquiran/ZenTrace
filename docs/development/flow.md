@@ -7,6 +7,6 @@ core/tracer (startSpan / endSpan)
 SpanData (normalized)
 ↓
 exporters[]
-├── TraceFlow UI
+├── ZenTrace UI
 ├── zipkin
 ├── otel

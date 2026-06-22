@@ -6,7 +6,7 @@ export type StoredSpanLog = {
   ts: number
 }
 
-const LOGS_TAG = 'devtrace.logs'
+const LOGS_TAG = 'zentrace.logs'
 
 export function recordSpanLog(
   span: Span,

@@ -6,7 +6,7 @@ import {
   openPanel,
 } from './helpers/extension'
 
-test.describe('DevTrace Chrome extension', () => {
+test.describe('ZenTrace Chrome extension', () => {
   test('registers a service worker and devtools page', async () => {
     const context = await launchExtensionContext()
 

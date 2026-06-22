@@ -27,11 +27,6 @@ npm install zentrace
 
 Copy [`examples/checkout.ts`](examples/checkout.ts) → call `runCheckoutExample()`.
 
-![Checkout trace — span tree, timeline, and inspector](docs/assets/example-checkout.png)
-
-<details>
-<summary><code>examples/checkout.ts</code> — click to expand</summary>
-
 ```ts
 import { Span, trace } from 'zentrace'
 
@@ -146,8 +141,6 @@ export function runCheckoutExample(orderId = `order-${Date.now()}`) {
 }
 ```
 
-</details>
-
 ![Description](https://drive.google.com/uc?export=view&id=1x1TG4S1Wk5ixGI8cPklvgaSHq84x4bec)
 
 ---
@@ -155,11 +148,6 @@ export function runCheckoutExample(orderId = `order-${Date.now()}`) {
 ## Example: parallel async
 
 Copy [`examples/parallel-order.ts`](examples/parallel-order.ts) → call `runParallelOrderExample()`.
-
-![Parallel order trace — sibling spans on the timeline](docs/assets/example-parallel.png)
-
-<details>
-<summary><code>examples/parallel-order.ts</code> — click to expand</summary>
 
 ```ts
 import { Span, trace } from 'zentrace'
@@ -211,8 +199,6 @@ export function runParallelOrderExample(
 }
 ```
 
-</details>
-
 ![Description](https://drive.google.com/uc?export=view&id=13osbG0355Nd4wayC8o_r6lmKpjpR_S9D)
 
 ---
@@ -221,9 +207,6 @@ export function runParallelOrderExample(
 
 Copy [`examples/error-retry.ts`](examples/error-retry.ts) → call `runErrorRetryExample()`. Use the **Errors** filter in the toolbar.
 
-![Error retry trace — failed spans and recovery](docs/assets/example-error-retry.png)
-
-<details>
 <summary><code>examples/error-retry.ts</code> — click to expand</summary>
 
 ```ts
@@ -299,16 +282,11 @@ export function runErrorRetryExample(invoiceId = `inv-${Date.now()}`) {
 
 ![Description](https://drive.google.com/uc?export=view&id=1VTWLV1tlNqmmCKGtWuKlJHlqtN2Kzugi)
 
-</details>
-
 ---
 
 ## Example: `traceFn()`
 
 Copy [`examples/trace-fn-cart.ts`](examples/trace-fn-cart.ts) → call `runTraceFnCartExample()`.
-
-<details>
-<summary><code>examples/trace-fn-cart.ts</code> — click to expand</summary>
 
 ```ts
 import { traceFn } from 'zentrace'
@@ -369,8 +347,6 @@ export function runTraceFnCartExample(userId = `user-${Date.now()}`) {
 ```
 
 ![Description](https://drive.google.com/uc?export=view&id=1hkceMZbWrFLhelLjIejqmskw_RF9hO1r)
-
-</details>
 
 ---
 

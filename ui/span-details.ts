@@ -35,6 +35,21 @@ export function parseLogAnnotation(
 }
 
 export function extractLogs(span: SpanData, traceStartUs: number): TraceLog[] {
+  const traceStartMs = traceStartUs / 1000
+  const storedLogs = readStoredLogs(span.tags?.[SPAN_LOGS_TAG])
+
+  // Runtime writes each console line to annotations, log.* tags, and
+  // devtrace.logs. Use one canonical source so the UI does not show duplicates.
+  if (storedLogs.length > 0) {
+    return storedLogs
+      .map((entry) => ({
+        level: entry.level as TraceLog['level'],
+        message: entry.message,
+        timestampMs: entry.ts - traceStartMs,
+      }))
+      .sort((a, b) => a.timestampMs - b.timestampMs)
+  }
+
   const logs: TraceLog[] = []
   const seen = new Set<string>()
 
@@ -52,31 +67,18 @@ export function extractLogs(span: SpanData, traceStartUs: number): TraceLog[] {
     })
   }
 
+  if (logs.length > 0) {
+    return logs.sort((a, b) => a.timestampMs - b.timestampMs)
+  }
+
   for (const level of ['log', 'info', 'warn', 'error'] as const) {
     const message = span.tags?.[`log.${level}`]
     if (!message) continue
-
-    const key = `${level}:${message}`
-    if (seen.has(key)) continue
-    seen.add(key)
 
     logs.push({
       level,
       message,
       timestampMs: (span.timestamp - traceStartUs) / 1000,
-    })
-  }
-
-  const traceStartMs = traceStartUs / 1000
-  for (const entry of readStoredLogs(span.tags?.[SPAN_LOGS_TAG])) {
-    const key = `${entry.level}:${entry.message}:${entry.ts}`
-    if (seen.has(key)) continue
-    seen.add(key)
-
-    logs.push({
-      level: entry.level as TraceLog['level'],
-      message: entry.message,
-      timestampMs: entry.ts - traceStartMs,
     })
   }
 

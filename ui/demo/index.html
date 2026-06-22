@@ -21,7 +21,7 @@
       }
 
       main {
-        width: min(560px, calc(100vw - 32px));
+        width: min(640px, calc(100vw - 32px));
         padding: 32px;
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
@@ -33,16 +33,28 @@
         font-size: 24px;
       }
 
-      p {
-        margin: 0 0 20px;
+      .lead {
+        margin: 0 0 24px;
         color: #9ea0a5;
         line-height: 1.5;
       }
 
-      button {
+      #examples {
+        display: grid;
+        gap: 12px;
+      }
+
+      .example-card {
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .example-btn {
         border: 0;
         border-radius: 8px;
-        padding: 12px 16px;
+        padding: 10px 14px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
@@ -50,42 +62,60 @@
         color: white;
       }
 
-      button:disabled {
+      .example-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
       }
 
+      .example-hint {
+        margin: 8px 0 0;
+        font-size: 13px;
+        color: #9ea0a5;
+        line-height: 1.4;
+      }
+
       #status {
-        margin-top: 16px;
+        margin-top: 20px;
+        padding: 12px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.25);
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 12px;
         color: #c7c8cc;
+        min-height: 48px;
       }
 
       ol {
-        margin: 20px 0 0;
+        margin: 24px 0 0;
         padding-left: 20px;
         color: #9ea0a5;
         line-height: 1.6;
+        font-size: 14px;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.92em;
       }
     </style>
   </head>
   <body>
     <main>
       <h1>ZenTrace Demo</h1>
-      <p>
-        This page uses the real <code>@trace</code> decorator from the package.
-        Spans are emitted to the ZenTrace Chrome DevTools panel.
+      <p class="lead">
+        Each example is a copy-paste file in <code>examples/</code>. Run one,
+        inspect the span tree, timeline, logs, and inspector in the ZenTrace
+        DevTools panel.
       </p>
 
-      <button id="run-checkout" type="button">Run traced checkout</button>
+      <div id="examples"></div>
       <div id="status"></div>
 
       <ol>
         <li>Load the extension from <code>extension/</code></li>
-        <li>Keep this tab open</li>
-        <li>Open DevTools and select the <strong>ZenTrace</strong> panel</li>
-        <li>Click the button above and watch live spans appear</li>
+        <li>Run <code>pnpm dev:demo</code> and keep this tab open</li>
+        <li>Open DevTools → <strong>ZenTrace</strong> panel</li>
+        <li>Click an example and watch live spans appear</li>
       </ol>
     </main>
 

@@ -74,7 +74,7 @@ export function traceFn<
   TResult,
   TSpan extends boolean | undefined = false,
 >(
-  fn: (...args: [...TArgs, span: SpanType]) => TResult,
+  fn: (...args: [...TArgs]) => TResult,
   options?: TraceFnOptions<TSpan>,
 ): (...args: TArgs) => TraceFnReturn<TResult, TSpan>
 

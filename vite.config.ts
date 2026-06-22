@@ -26,6 +26,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(root, 'src'),
       '@ui': path.resolve(root, 'ui'),
+      zentrace: path.resolve(root, 'src/index.ts'),
     },
   },
   build: {

@@ -86,7 +86,7 @@ chrome.runtime.onConnect.addListener((port) => {
 })
 
 chrome.runtime.onMessage.addListener((message, sender) => {
-  if (message?.type !== 'DEVTRACE_SPAN' || !sender.tab?.id) return
+  if (message?.type !== 'ZENTRACE_SPAN' || !sender.tab?.id) return
 
   deliverSpan(sender.tab.id, message.payload)
 })

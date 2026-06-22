@@ -1,6 +1,6 @@
 import { emitTrace } from '../exporters/browser/browser-export'
 import { recordSpanLog } from '../instrumentation/log-record'
-import type { ConsoleLevel } from '../instrumentation/logs'
+import { callOriginalConsole, type ConsoleLevel } from '../instrumentation/logs'
 
 import { TraceContext } from './context'
 import { formatLogArgs } from './stack'
@@ -93,16 +93,16 @@ export class Span {
 
         recordSpanLog(this as any, level, message)
 
-        // Optional: also emit immediately
-        const durationMs = this.attributes.duration_ms
-          ? Number(this.attributes.duration_ms)
-          : undefined
+        if (typeof window !== 'undefined') {
+          const durationMs = this.attributes.duration_ms
+            ? Number(this.attributes.duration_ms)
+            : undefined
 
-        alert('emitting span 2')
-        emitTrace(this.toJSON(durationMs ? durationMs * 1000 : undefined))
+          emitTrace(this.toJSON(durationMs ? durationMs * 1000 : undefined))
+        }
 
-        // still call real console
-        ;(console as any)[level](...args)
+        // Bypass the log-capture patch — this log is already on this span.
+        callOriginalConsole(level, args)
       }
     }
 

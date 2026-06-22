@@ -1,5 +1,6 @@
-import type { Span } from './span'
-import { captureStack, getFunctionMarker } from './stack'
+import type { Span } from '../core/span'
+import { captureStack, getFunctionMarker } from '../core/stack'
+
 import {
   getActiveSpans,
   getCurrentSpan,

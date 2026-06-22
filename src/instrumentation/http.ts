@@ -1,5 +1,5 @@
-import { runSpan } from '../core/run-span'
-import { extractParentSpanFromHeaders } from '../core/trace-runtime'
+import { runSpan } from '../runtime/run-span'
+import { extractParentSpanFromHeaders } from '../runtime/trace-runtime'
 import { inject } from '../util/inject'
 
 import type { Span } from '@/core/span'
@@ -9,7 +9,7 @@ type HttpTraceOptions = {
   parentSpan?: Span
 }
 
-const HTTP_TRACING_KEY = '__DEVTRACE_HTTP_TRACING__'
+const HTTP_TRACING_KEY = '__ZENTRACE_HTTP_TRACING__'
 
 type HttpTracingState = {
   nativeFetch?: typeof fetch

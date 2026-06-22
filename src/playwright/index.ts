@@ -1,12 +1,12 @@
 import { createTraceSession, type TraceSession } from '../testing/session'
 
-export type DevTraceTestInfo = {
+export type ZenTraceTestInfo = {
   title: string
   file: string
   project?: { name?: string }
 }
 
-export type DevTracePage = {
+export type ZenTracePage = {
   addInitScript: (
     script: (session: TraceSession) => void,
     session: TraceSession,
@@ -14,9 +14,9 @@ export type DevTracePage = {
 }
 
 /** Attach the current Playwright test identity to every root span in the page. */
-export async function attachDevTrace(
-  page: DevTracePage,
-  testInfo: DevTraceTestInfo,
+export async function attachZenTrace(
+  page: ZenTracePage,
+  testInfo: ZenTraceTestInfo,
 ): Promise<TraceSession> {
   const session = createTraceSession({
     title: testInfo.title,
@@ -25,19 +25,19 @@ export async function attachDevTrace(
   })
 
   await page.addInitScript((value) => {
-    window.__DEVTRACE_SESSION__ = value
+    window.__ZENTRACE_SESSION__ = value
   }, session)
 
   return session
 }
 
 /** Inline script for Cypress `cy.visit({ onBeforeLoad })` or custom runners. */
-export function devTraceSessionInitScript(session: TraceSession): string {
-  return `window.__DEVTRACE_SESSION__=${JSON.stringify(session)};`
+export function zenTraceSessionInitScript(session: TraceSession): string {
+  return `window.__ZENTRACE_SESSION__=${JSON.stringify(session)};`
 }
 
 export function createSessionFromTestInfo(
-  testInfo: DevTraceTestInfo,
+  testInfo: ZenTraceTestInfo,
 ): TraceSession {
   return createTraceSession({
     title: testInfo.title,

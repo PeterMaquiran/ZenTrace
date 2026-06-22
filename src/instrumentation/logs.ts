@@ -1,8 +1,8 @@
-import { resolveSpanFromStack } from '../core/active-context'
 import type { Span } from '../core/span'
 import { captureStack, formatLogArgs } from '../core/stack'
-import { getCurrentSpan } from '../core/trace-runtime'
 import { emitTrace } from '../exporters/browser/browser-export'
+import { resolveSpanFromStack } from '../runtime/active-context'
+import { getCurrentSpan } from '../runtime/trace-runtime'
 
 import { recordSpanLog } from './log-record'
 
@@ -79,4 +79,13 @@ export function uninstallLogCapture() {
 
   originals.clear()
   installed = false
+}
+
+/** Bypass log capture — used by span.console after it already recorded the log. */
+export function callOriginalConsole(
+  level: ConsoleLevel,
+  args: unknown[],
+): void {
+  ensureConsolePatch()
+  originals.get(level)?.(...args)
 }

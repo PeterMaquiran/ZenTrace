@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  configureDevTrace,
-  getDevTraceConfig,
-  resetDevTraceConfig,
+  configureZenTrace,
+  getZenTraceConfig,
+  resetZenTraceConfig,
 } from '../../testing/configure'
 import {
   createTraceSession,
@@ -11,13 +11,13 @@ import {
   SESSION_TAGS,
 } from '../../testing/session'
 
-describe('configureDevTrace', () => {
+describe('configureZenTrace', () => {
   it('enables arg capture by default in test mode', () => {
-    resetDevTraceConfig()
-    configureDevTrace({ testMode: true })
+    resetZenTraceConfig()
+    configureZenTrace({ testMode: true })
 
-    expect(getDevTraceConfig().captureArgs).toBe(true)
-    expect(getDevTraceConfig().captureResult).toBe(true)
+    expect(getZenTraceConfig().captureArgs).toBe(true)
+    expect(getZenTraceConfig().captureResult).toBe(true)
   })
 })
 

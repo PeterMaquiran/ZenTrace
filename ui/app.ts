@@ -69,4 +69,4 @@ runButton?.addEventListener('click', () => {
 })
 
 status.textContent =
-  'Open Chrome DevTools → DevTrace panel, then click "Run traced checkout".'
+  'Open Chrome DevTools → ZenTrace panel, then click "Run traced checkout".'

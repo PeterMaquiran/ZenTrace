@@ -4,7 +4,7 @@ import type { TraceSession } from '../testing/session'
 declare global {
   interface Window {
     __TRACE__: TraceBus
-    __DEVTRACE_SESSION__?: TraceSession
+    __ZENTRACE_SESSION__?: TraceSession
   }
 }
 

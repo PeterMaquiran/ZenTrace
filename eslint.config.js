@@ -73,9 +73,10 @@ export default tseslint.config(
 
   // Demo app uses automatic @trace propagation via stack context
   {
-    files: ['ui/demo/**/*.{ts,tsx}'],
+    files: ['ui/demo/**/*.{ts,tsx}', 'examples/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
+      'no-console': 'off',
     },
   },
 

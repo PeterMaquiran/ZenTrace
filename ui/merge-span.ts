@@ -54,14 +54,14 @@ export function mergeSpanUpdate(
   }
 
   const mergedLogs = mergeStoredLogs(
-    existing.tags?.['devtrace.logs'],
-    incoming.tags?.['devtrace.logs'],
+    existing.tags?.['zentrace.logs'],
+    incoming.tags?.['zentrace.logs'],
   )
 
   const tags = {
     ...existing.tags,
     ...incoming.tags,
-    ...(mergedLogs ? { 'devtrace.logs': mergedLogs } : {}),
+    ...(mergedLogs ? { 'zentrace.logs': mergedLogs } : {}),
   }
 
   return {

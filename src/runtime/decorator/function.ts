@@ -1,11 +1,11 @@
-import { runSpan, runSpanSync } from '../core/run-span'
-import type { Span as SpanType } from '../core/span'
-import { getDevTraceConfig } from '../testing/configure'
+import type { Span as SpanType } from '../../core/span'
+import { getZenTraceConfig } from '../../testing/configure'
 import {
   isSpan,
   receivesSpanParam,
   resolveManualPropagation,
-} from '../util/span-args'
+} from '../../util/span-args'
+import { runSpan, runSpanSync } from '../run-span'
 
 import type { TraceOptions } from './decorator'
 
@@ -41,7 +41,7 @@ function buildRunSpanOptions(
   options: TraceFnRuntimeOptions,
   parentSpan?: SpanType,
 ) {
-  const defaults = getDevTraceConfig()
+  const defaults = getZenTraceConfig()
 
   return {
     module: options.module,
@@ -74,7 +74,7 @@ export function traceFn<
   TResult,
   TSpan extends boolean | undefined = false,
 >(
-  fn: (...args: [...TArgs, span: SpanType]) => TResult,
+  fn: (...args: [...TArgs]) => TResult,
   options?: TraceFnOptions<TSpan>,
 ): (...args: TArgs) => TraceFnReturn<TResult, TSpan>
 

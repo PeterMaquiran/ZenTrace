@@ -1,10 +1,10 @@
+import type { Span } from '../core/span'
+import { Tracer } from '../core/tracer'
 import { emitTrace } from '../exporters/browser/browser-export'
 import { SpanStorage } from '../storage/memory-storage'
 import { getTraceSession, SESSION_TAGS } from '../testing/session'
 
 import { enterSpan, leaveSpan, markSpan } from './active-context'
-import type { Span } from './span'
-import { Tracer } from './tracer'
 
 export type RunSpanOptions = {
   module?: string
@@ -17,7 +17,7 @@ export type RunSpanOptions = {
   parentSpan?: Span
 }
 
-const defaultTracer = new Tracer('devtrace')
+const defaultTracer = new Tracer('zentrace')
 
 type SpanRun = {
   span: Span

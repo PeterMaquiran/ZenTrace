@@ -4,6 +4,7 @@
     "declaration": true,
     "outDir": "dist",
     "baseUrl": ".",
+    "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {

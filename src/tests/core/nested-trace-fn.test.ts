@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
-import { traceFn } from '../../decorator/function'
+import { traceFn } from '../../runtime/decorator/function'
 import { SpanStorage } from '../../storage/memory-storage'
 
 import type { Span } from '@/index'

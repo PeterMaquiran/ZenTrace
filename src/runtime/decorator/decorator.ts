@@ -1,7 +1,7 @@
-import { runSpan, type RunSpanOptions } from '../core/run-span'
-import type { Span } from '../core/span'
-import { getDevTraceConfig } from '../testing/configure'
-import { resolveManualPropagation } from '../util/span-args'
+import type { Span } from '../../core/span'
+import { getDevTraceConfig } from '../../testing/configure'
+import { resolveManualPropagation } from '../../util/span-args'
+import { runSpan, type RunSpanOptions } from '../run-span'
 
 export type TraceOptions = {
   module?: string

@@ -1,4 +1,4 @@
-import type { Span } from './span'
+import type { Span } from '../core/span'
 
 const RUNTIME_KEY = '__DEVTRACE_RUNTIME__'
 

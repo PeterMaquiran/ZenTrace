@@ -11,7 +11,9 @@ export type TraceOptions = {
   span?: boolean
 }
 
-export function trace(options: TraceOptions = {}) {
+export function trace(
+  options: TraceOptions = { captureArgs: true, captureResult: true },
+) {
   return function (
     target: object,
     propertyKey: string,

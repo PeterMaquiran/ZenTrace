@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & ideas
+    url: https://github.com/PeterMaquiran/ZenTrace/discussions
+    about: Ask questions, share examples, or brainstorm before opening an issue
+  - name: Contributing guide
+    url: https://github.com/PeterMaquiran/ZenTrace/blob/main/CONTRIBUTING.md
+    about: Setup, branch naming, commits, and PR expectations
+  - name: Security report
+    url: https://github.com/PeterMaquiran/ZenTrace/security/advisories/new
+    about: Report a vulnerability privately (do not use public issues)

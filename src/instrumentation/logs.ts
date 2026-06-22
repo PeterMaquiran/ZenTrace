@@ -80,3 +80,12 @@ export function uninstallLogCapture() {
   originals.clear()
   installed = false
 }
+
+/** Bypass log capture — used by span.console after it already recorded the log. */
+export function callOriginalConsole(
+  level: ConsoleLevel,
+  args: unknown[],
+): void {
+  ensureConsolePatch()
+  originals.get(level)?.(...args)
+}

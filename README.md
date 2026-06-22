@@ -2,7 +2,7 @@
 
 Trace function calls, async flow, logs, and HTTP — see it in Chrome DevTools.
 
-[![npm version](https://img.shields.io/npm/v/zentrace.svg)](https://www.npmjs.com/package/zentrace)
+[npm version](https://www.npmjs.com/package/zentrace)
 
 ## The problem
 
@@ -12,12 +12,12 @@ Async JavaScript is hard to debug. A bug in `checkout()` might come from `valida
 
 Decorate your functions with `@trace()`. Run your app. Open the **ZenTrace** panel in Chrome DevTools.
 
-|                 |                                         |
-| --------------- | --------------------------------------- |
-| **Span tree**   | which function called which             |
-| **Timeline**    | how long each step took                 |
-| **Inspector**   | arguments, return values, errors        |
-| **Logs + HTTP** | `console.*` and `fetch` linked to spans |
+|                 |                                          |
+| --------------- | ---------------------------------------- |
+| **Span tree**   | which function called which              |
+| **Timeline**    | how long each step took                  |
+| **Inspector**   | arguments, return values, errors         |
+| **Logs + HTTP** | `console.`\* and `fetch` linked to spans |
 
 ```bash
 npm install zentrace
@@ -25,10 +25,10 @@ npm install zentrace
 
 ## Example: checkout flow
 
-Copy [`examples/checkout.ts`](examples/checkout.ts) → call `runCheckoutExample()`.
+Copy `[examples/checkout.ts](examples/checkout.ts)` → call `runCheckoutExample()`.
 
 ```ts
-import { Span, trace } from 'zentrace'
+import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -37,9 +37,9 @@ function sleep(ms: number) {
 class AuthService {
   @trace({ module: 'auth', captureArgs: true, captureResult: true })
   async validateToken(token: string, span: Span) {
-    console.log('validating token', token)
+    span?.console.log('validating token', token)
     await sleep(80)
-    console.info('token validated', { userId: 'user_123' })
+    span?.console.info('token validated', { userId: 'user_123' })
     return { userId: 'user_123', roles: ['USER'] }
   }
 }
@@ -48,7 +48,7 @@ class PricingService {
   @trace({ module: 'pricing', captureArgs: true, captureResult: true })
   async calculatePrice(orderId: string, span: Span) {
     await sleep(120)
-    console.log('price calculated for', orderId)
+    span.console.log('price calculated for', orderId)
     const base = 100
     const tax = base * 0.23
     const discount = 10
@@ -60,7 +60,7 @@ class InventoryService {
   @trace({ module: 'inventory', captureArgs: true, captureResult: true })
   async reserveStock(orderId: string, span: Span) {
     await sleep(150)
-    console.info('stock reserved', { orderId, warehouse: 'EU-WEST-1' })
+    span.console.info('stock reserved', { orderId, warehouse: 'EU-WEST-1' })
     return { orderId, reserved: true, warehouse: 'EU-WEST-1' }
   }
 }
@@ -127,7 +127,7 @@ class CheckoutService {
 
     const payment = await this.payment.charge(price.total, user.userId, span!)
 
-    console.log('checkout completed', { orderId, total: price.total })
+    span?.console.log('checkout completed', { orderId, total: price.total })
     void this.notification.sendConfirmation(user.userId, span!)
 
     return { orderId, user, price, stock, payment }
@@ -136,21 +136,22 @@ class CheckoutService {
 
 const checkout = new CheckoutService()
 
+/** Call this from a button click — same trace every time you run it. */
 export function runCheckoutExample(orderId = `order-${Date.now()}`) {
   return checkout.runCheckout(orderId)
 }
 ```
 
-![Description](https://drive.google.com/uc?export=view&id=1x1TG4S1Wk5ixGI8cPklvgaSHq84x4bec)
+Description
 
 ---
 
 ## Example: parallel async
 
-Copy [`examples/parallel-order.ts`](examples/parallel-order.ts) → call `runParallelOrderExample()`.
+Copy `[examples/parallel-order.ts](examples/parallel-order.ts)` → call `runParallelOrderExample()`.
 
 ```ts
-import { Span, trace } from 'zentrace'
+import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -159,7 +160,7 @@ function sleep(ms: number) {
 class OrderService {
   @trace({ module: 'orders', captureArgs: true, captureResult: true })
   async createOrder(orderId: string, span?: Span) {
-    console.info('creating order', orderId)
+    span?.console.info('creating order', orderId)
 
     const [price, stock, shipping] = await Promise.all([
       this.calculatePrice(orderId, span!),
@@ -167,7 +168,7 @@ class OrderService {
       this.estimateShipping(orderId, span!),
     ])
 
-    console.log('order assembled', { orderId, total: price.total })
+    span?.console.log('order assembled', { orderId, total: price.total })
     return { orderId, price, stock, shipping }
   }
 
@@ -193,24 +194,27 @@ class OrderService {
 const orders = new OrderService()
 
 export function runParallelOrderExample(
-  orderId = `order-parallel-${Date.now()}`,
+  baseOrderId = `order-parallel-${Date.now()}`,
 ) {
-  return orders.createOrder(orderId)
+  return Promise.all([
+    orders.createOrder(`${baseOrderId}-A`),
+    orders.createOrder(`${baseOrderId}-B`),
+  ])
 }
 ```
 
-![Description](https://drive.google.com/uc?export=view&id=13osbG0355Nd4wayC8o_r6lmKpjpR_S9D)
+Description
 
 ---
 
 ## Example: errors + retry
 
-Copy [`examples/error-retry.ts`](examples/error-retry.ts) → call `runErrorRetryExample()`. Use the **Errors** filter in the toolbar.
+Copy `[examples/error-retry.ts](examples/error-retry.ts)` → call `runErrorRetryExample()`. Use the **Errors** filter in the toolbar.
 
-<summary><code>examples/error-retry.ts</code> — click to expand</summary>
+`examples/error-retry.ts` — click to expand
 
 ```ts
-import { Span, trace } from 'zentrace'
+import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -228,13 +232,13 @@ class PaymentGateway {
   async callProvider(amount: number, span: Span) {
     this.attempts += 1
     await sleep(70)
-    console.warn('gateway attempt', this.attempts)
+    span.console.warn('gateway attempt', this.attempts)
 
     if (this.attempts < 3) {
       throw new Error(`Gateway timeout (attempt ${this.attempts})`)
     }
 
-    console.info('gateway charge succeeded', { amount })
+    span.console.info('gateway charge succeeded', { amount })
     return { provider: 'stripe-mock', amount, chargeId: `ch_${Date.now()}` }
   }
 
@@ -251,7 +255,7 @@ class PaymentGateway {
         return await fn()
       } catch (error) {
         lastError = error
-        console.error('charge failed, retrying', {
+        span.console.error('charge failed, retrying', {
           attempt,
           error: String(error),
         })
@@ -268,7 +272,7 @@ class BillingService {
 
   @trace({ module: 'billing', captureArgs: true, captureResult: true })
   async processInvoice(invoiceId: string, span?: Span) {
-    console.info('processing invoice', invoiceId)
+    span?.console.info('processing invoice', invoiceId)
     const charge = await this.gateway.charge(149.99, span!)
     return { invoiceId, status: 'paid', charge }
   }
@@ -280,25 +284,25 @@ export function runErrorRetryExample(invoiceId = `inv-${Date.now()}`) {
 }
 ```
 
-![Description](https://drive.google.com/uc?export=view&id=1VTWLV1tlNqmmCKGtWuKlJHlqtN2Kzugi)
+Description
 
 ---
 
 ## Example: `traceFn()`
 
-Copy [`examples/trace-fn-cart.ts`](examples/trace-fn-cart.ts) → call `runTraceFnCartExample()`.
+Copy `[examples/trace-fn-cart.ts](examples/trace-fn-cart.ts)` → call `runTraceFnCartExample()`.
 
 ```ts
-import { traceFn } from 'zentrace'
+import { configureZenTrace, enableAutoTracing, Span, traceFn } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 const loadItems = traceFn(
-  async (userId: string) => {
+  async (userId: string, span?: Span) => {
     await sleep(45)
-    console.log('loaded cart items', userId)
+    span?.console.log('loaded cart items', userId)
     return [
       { sku: 'BOOK-01', title: 'ZenTrace Guide', qty: 1, price: 29 },
       { sku: 'MUG-02', title: 'Dev Mug', qty: 2, price: 12 },
@@ -313,7 +317,7 @@ const loadItems = traceFn(
 )
 
 const applyCoupon = traceFn(
-  async (items: { sku: string; price: number; qty: number }[]) => {
+  async (items: { sku: string; price: number; qty: number }[], span?: Span) => {
     await sleep(35)
     const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
     return { items, subtotal, discount: 10, total: subtotal - 10 }
@@ -327,10 +331,10 @@ const applyCoupon = traceFn(
 )
 
 const finalizeCart = traceFn(
-  async (userId: string) => {
-    const items = await loadItems(userId)
-    const priced = await applyCoupon(items)
-    console.info('cart ready', { userId, total: priced.total })
+  async (userId: string, span?: Span) => {
+    const items = await loadItems(userId, span)
+    const priced = await applyCoupon(items, span)
+    span?.console.info('cart ready', { userId, total: priced.total })
     return priced
   },
   {
@@ -346,7 +350,7 @@ export function runTraceFnCartExample(userId = `user-${Date.now()}`) {
 }
 ```
 
-![Description](https://drive.google.com/uc?export=view&id=1hkceMZbWrFLhelLjIejqmskw_RF9hO1r)
+Description
 
 ---
 
@@ -373,7 +377,7 @@ When `captureArgs` or `captureResult` are enabled, the payload is serialized dir
 
 Following standard distributed tracing patterns (akin to Zipkin annotations), this section displays timestamped events and logs tied to the span's lifecycle, allowing you to track exactly _when_ internal state changes or log statements occurred during the span's execution.
 
-![Description](https://drive.google.com/uc?export=view&id=1bNiIu-HQOwClUiHdNNtRsUOVGofBmhiU)
+Description
 
 ---
 
@@ -403,11 +407,11 @@ pnpm build:extension
 
 | File                                                                   | Run function                      | What you see                             |
 | ---------------------------------------------------------------------- | --------------------------------- | ---------------------------------------- |
-| [`examples/checkout.ts`](examples/checkout.ts)                         | `runCheckoutExample()`            | Deep tree, HTTP, parallel branches, logs |
-| [`examples/parallel-order.ts`](examples/parallel-order.ts)             | `runParallelOrderExample()`       | Three sibling spans on timeline          |
-| [`examples/error-retry.ts`](examples/error-retry.ts)                   | `runErrorRetryExample()`          | Failed attempts, retries, error logs     |
-| [`examples/trace-fn-cart.ts`](examples/trace-fn-cart.ts)               | `runTraceFnCartExample()`         | `traceFn()` without classes              |
-| [`examples/concurrent-checkouts.ts`](examples/concurrent-checkouts.ts) | `runConcurrentCheckoutsExample()` | Three separate root traces               |
+| `[examples/checkout.ts](examples/checkout.ts)`                         | `runCheckoutExample()`            | Deep tree, HTTP, parallel branches, logs |
+| `[examples/parallel-order.ts](examples/parallel-order.ts)`             | `runParallelOrderExample()`       | Three sibling spans on timeline          |
+| `[examples/error-retry.ts](examples/error-retry.ts)`                   | `runErrorRetryExample()`          | Failed attempts, retries, error logs     |
+| `[examples/trace-fn-cart.ts](examples/trace-fn-cart.ts)`               | `runTraceFnCartExample()`         | `traceFn()` without classes              |
+| `[examples/concurrent-checkouts.ts](examples/concurrent-checkouts.ts)` | `runConcurrentCheckoutsExample()` | Three separate root traces               |
 
 ---
 

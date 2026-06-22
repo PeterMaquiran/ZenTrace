@@ -13,7 +13,7 @@ export type TraceOptions = {
 
 export function trace(
   options: TraceOptions = { captureArgs: true, captureResult: true },
-) {
+): any {
   return function (
     target: object,
     propertyKey: string,

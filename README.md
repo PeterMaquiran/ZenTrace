@@ -350,6 +350,28 @@ export function runTraceFnCartExample(userId = `user-${Date.now()}`) {
 
 ---
 
+## Chrome Extension
+
+This repository includes a Chrome DevTools extension.
+
+The extension source code is located in the extension/ folder at the root of the repository.
+
+1. To install it in Chrome:
+2. Open Chrome and go to chrome://extensions/
+3. Enable Developer mode (top right)
+4. Click “Load unpacked”
+
+Select the extension/ folder from this repository
+Once installed, you’ll see the ZenTrace panel inside Chrome DevTools.
+
+**Make sure to build the extension first**
+
+```ts
+pnpm build:extension
+```
+
+---
+
 ## All examples
 
 | File                                                                   | Run function                      | What you see                             |

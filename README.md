@@ -142,7 +142,7 @@ export function runCheckoutExample(orderId = `order-${Date.now()}`) {
 }
 ```
 
-Description
+![Description](https://drive.google.com/uc?export=view&id=1x1TG4S1Wk5ixGI8cPklvgaSHq84x4bec)
 
 ---
 
@@ -203,7 +203,7 @@ export function runParallelOrderExample(
 }
 ```
 
-Description
+![Description](https://drive.google.com/uc?export=view&id=13osbG0355Nd4wayC8o_r6lmKpjpR_S9D)
 
 ---
 
@@ -284,7 +284,7 @@ export function runErrorRetryExample(invoiceId = `inv-${Date.now()}`) {
 }
 ```
 
-Description
+![Description](https://drive.google.com/uc?export=view&id=1VTWLV1tlNqmmCKGtWuKlJHlqtN2Kzugi)
 
 ---
 
@@ -350,7 +350,7 @@ export function runTraceFnCartExample(userId = `user-${Date.now()}`) {
 }
 ```
 
-Description
+![Description](https://drive.google.com/uc?export=view&id=1hkceMZbWrFLhelLjIejqmskw_RF9hO1r)
 
 ---
 
@@ -377,7 +377,7 @@ When `captureArgs` or `captureResult` are enabled, the payload is serialized dir
 
 Following standard distributed tracing patterns (akin to Zipkin annotations), this section displays timestamped events and logs tied to the span's lifecycle, allowing you to track exactly _when_ internal state changes or log statements occurred during the span's execution.
 
-Description
+![Description](https://drive.google.com/uc?export=view&id=1bNiIu-HQOwClUiHdNNtRsUOVGofBmhiU)
 
 ---
 

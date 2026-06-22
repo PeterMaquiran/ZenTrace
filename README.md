@@ -25,7 +25,7 @@ npm install zentrace
 
 ## Example: checkout flow
 
-Copy `[examples/checkout.ts](examples/checkout.ts)` → call `runCheckoutExample()`.
+Copy [examples/checkout.ts](examples/checkout.ts) → call `runCheckoutExample()`.
 
 ```ts
 import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'

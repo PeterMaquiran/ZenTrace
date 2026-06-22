@@ -8,8 +8,8 @@ export type AutoTracingOptions = {
 }
 
 export function enableAutoTracing(options: AutoTracingOptions = {}) {
-  if (options.logs !== false) installLogCapture()
-  if (options.http !== false)
+  if (options.logs == true) installLogCapture()
+  if (options.http == true)
     installHttpTracing({ serviceName: options.serviceName })
 }
 

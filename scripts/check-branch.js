@@ -9,6 +9,12 @@ const validTypes = ['feat', 'fix', 'chore', 'refactor', 'test', 'docs']
 
 const [type] = branch.split('/')
 
+// ✅ allow developer branch
+if (branch === 'developer') {
+  console.log('✅ Branch name OK:', branch)
+  process.exit(0)
+}
+
 if (!pattern.test(branch)) {
   console.log('\n❌ Invalid branch name:', branch)
 

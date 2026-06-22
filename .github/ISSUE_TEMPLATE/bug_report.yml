@@ -1,0 +1,92 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+title: "[bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributions: []
+    validations: {}
+    value: |
+      Thanks for taking the time to report a bug. The more detail you provide, the faster we can reproduce and fix it.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of ZenTrace is affected?
+      options:
+        - Core library (`@trace`, spans, context)
+        - HTTP / fetch instrumentation
+        - Log instrumentation
+        - Chrome extension
+        - DevTools UI
+        - Playwright integration
+        - Examples / docs
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: ZenTrace version
+      description: npm package version or git commit SHA
+      placeholder: "0.0.1 or abc1234"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected instead.
+      placeholder: |
+        Expected: child spans appear under the parent trace.
+        Actual: spans show as separate root traces.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal code or commands to trigger the issue.
+      placeholder: |
+        1. Install zentrace@0.0.1
+        2. Decorate `checkout()` with `@trace()`
+        3. Run the app and open DevTools
+        4. See error / wrong behavior
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Runtime, browser, and tooling versions.
+      placeholder: |
+        - Node 22.22.0
+        - Chrome 131
+        - macOS 15.2
+        - TypeScript 5.5
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs, screenshots, or trace output
+      description: Paste errors, console output, or attach screenshots of the DevTools panel.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues to avoid duplicates
+          required: true
+        - label: I can reproduce this on the latest version
+          required: false

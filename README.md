@@ -367,3 +367,18 @@ export function runTraceFnCartExample(userId = `user-${Date.now()}`) {
 ```ts
 import { trace, traceFn, type Span } from 'zentrace'
 ```
+
+---
+
+## Contributing
+
+Contributions are welcome — bug reports, docs, examples, and code.
+
+| Resource           | Link                                       |
+| ------------------ | ------------------------------------------ |
+| Contributing guide | [CONTRIBUTING.md](./CONTRIBUTING.md)       |
+| Code of conduct    | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) |
+| Security policy    | [SECURITY.md](./SECURITY.md)               |
+| License            | [MIT](./LICENSE)                           |
+
+Open an issue using the bug or feature templates, or submit a pull request.

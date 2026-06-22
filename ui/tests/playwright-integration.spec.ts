@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test'
 
-import { attachDevTrace } from '../../src/playwright/index'
+import { attachZenTrace } from '../../src/playwright/index'
 
-test.describe('DevTrace Playwright session', () => {
+test.describe('ZenTrace Playwright session', () => {
   test.beforeEach(async ({ page }, testInfo) => {
-    await attachDevTrace(page, testInfo)
+    await attachZenTrace(page, testInfo)
   })
 
   test('demo page exposes trace session for the active test', async ({
@@ -12,7 +12,7 @@ test.describe('DevTrace Playwright session', () => {
   }) => {
     await page.goto('/')
 
-    const session = await page.evaluate(() => window.__DEVTRACE_SESSION__)
+    const session = await page.evaluate(() => window.__ZENTRACE_SESSION__)
     expect(session?.title).toContain(
       'demo page exposes trace session for the active test',
     )

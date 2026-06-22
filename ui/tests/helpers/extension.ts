@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export const extensionPath = path.resolve(__dirname, '../../../extension')
 
 export function createUserDataDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'devtrace-pw-'))
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'zentrace-pw-'))
 }
 
 export async function launchExtensionContext(): Promise<BrowserContext> {

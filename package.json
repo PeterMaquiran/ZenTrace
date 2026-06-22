@@ -1,6 +1,6 @@
 {
   "name": "zentrace",
-  "description": "See what your code actually does.",
+  "description": "ZenTrace — see what your code actually does.",
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
@@ -8,6 +8,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeterMaquiran/ZenTrace.git"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

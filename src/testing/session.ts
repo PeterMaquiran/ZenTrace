@@ -6,25 +6,25 @@ export type TraceSession = {
 }
 
 export const SESSION_TAGS = {
-  testTitle: 'devtrace.test.title',
-  testFile: 'devtrace.test.file',
-  testProject: 'devtrace.test.project',
-  sessionId: 'devtrace.session.id',
+  testTitle: 'zentrace.test.title',
+  testFile: 'zentrace.test.file',
+  testProject: 'zentrace.test.project',
+  sessionId: 'zentrace.session.id',
 } as const
 
 export function setTraceSession(session: TraceSession): void {
   if (typeof window === 'undefined') return
-  window.__DEVTRACE_SESSION__ = session
+  window.__ZENTRACE_SESSION__ = session
 }
 
 export function getTraceSession(): TraceSession | undefined {
   if (typeof window === 'undefined') return undefined
-  return window.__DEVTRACE_SESSION__
+  return window.__ZENTRACE_SESSION__
 }
 
 export function clearTraceSession(): void {
   if (typeof window === 'undefined') return
-  delete window.__DEVTRACE_SESSION__
+  delete window.__ZENTRACE_SESSION__
 }
 
 export function createTraceSession(input: {

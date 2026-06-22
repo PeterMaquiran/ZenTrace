@@ -1,4 +1,4 @@
-export type DevTraceConfig = {
+export type ZenTraceConfig = {
   /** Enables captureArgs/captureResult defaults for @trace(). */
   testMode?: boolean
   captureArgs?: boolean
@@ -7,16 +7,16 @@ export type DevTraceConfig = {
   slowThresholdMs?: number
 }
 
-const defaults: Required<DevTraceConfig> = {
+const defaults: Required<ZenTraceConfig> = {
   testMode: false,
   captureArgs: false,
   captureResult: false,
   slowThresholdMs: 100,
 }
 
-let config: Required<DevTraceConfig> = { ...defaults }
+let config: Required<ZenTraceConfig> = { ...defaults }
 
-export function configureDevTrace(options: DevTraceConfig = {}): void {
+export function configureZenTrace(options: ZenTraceConfig = {}): void {
   const next = { ...config, ...options }
 
   if (options.testMode) {
@@ -27,10 +27,10 @@ export function configureDevTrace(options: DevTraceConfig = {}): void {
   config = next
 }
 
-export function getDevTraceConfig(): Readonly<Required<DevTraceConfig>> {
+export function getZenTraceConfig(): Readonly<Required<ZenTraceConfig>> {
   return config
 }
 
-export function resetDevTraceConfig(): void {
+export function resetZenTraceConfig(): void {
   config = { ...defaults }
 }

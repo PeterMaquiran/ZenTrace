@@ -52,7 +52,7 @@ export function TraceToolbar({
           </button>
         ) : null}
         <div class="trace-toolbar-brand">
-          <span class="trace-toolbar-title">DevTrace</span>
+          <span class="trace-toolbar-title">ZenTrace</span>
           {usingLiveTrace ? (
             <span class="trace-toolbar-live">Live</span>
           ) : (

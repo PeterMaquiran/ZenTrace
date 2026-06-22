@@ -1,5 +1,5 @@
-import { runSpan } from '../core/run-span'
-import { extractParentSpanFromHeaders } from '../core/trace-runtime'
+import { runSpan } from '../runtime/run-span'
+import { extractParentSpanFromHeaders } from '../runtime/trace-runtime'
 import { inject } from '../util/inject'
 
 import type { Span } from '@/core/span'

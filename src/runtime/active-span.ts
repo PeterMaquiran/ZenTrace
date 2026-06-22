@@ -1,4 +1,5 @@
-import type { Span } from './span'
+import type { Span } from '../core/span'
+
 import { getCurrentSpan, markSpan } from './trace-runtime'
 
 export function getActiveSpan(): Span | undefined {

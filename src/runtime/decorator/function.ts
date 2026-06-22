@@ -1,11 +1,11 @@
-import { runSpan, runSpanSync } from '../core/run-span'
-import type { Span as SpanType } from '../core/span'
-import { getDevTraceConfig } from '../testing/configure'
+import type { Span as SpanType } from '../../core/span'
+import { getDevTraceConfig } from '../../testing/configure'
 import {
   isSpan,
   receivesSpanParam,
   resolveManualPropagation,
-} from '../util/span-args'
+} from '../../util/span-args'
+import { runSpan, runSpanSync } from '../run-span'
 
 import type { TraceOptions } from './decorator'
 

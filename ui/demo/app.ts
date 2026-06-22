@@ -158,7 +158,11 @@ class CheckoutService {
 
     const user = await this.auth.validateToken(token, span!)
 
-    await fetch('https://jsonplaceholder.typicode.com/todos/1')
+    await fetch('https://jsonplaceholder.typicode.com/todos/1', {
+      headers: {
+        'x-devtrace-parent-span-id': span!.context.spanId,
+      },
+    })
 
     const [price, stock] = await Promise.all([
       this.pricing.calculatePrice(orderId, span!),

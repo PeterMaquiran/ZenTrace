@@ -98,7 +98,6 @@ export class Span {
           ? Number(this.attributes.duration_ms)
           : undefined
 
-        alert('emitting span 2')
         emitTrace(this.toJSON(durationMs ? durationMs * 1000 : undefined))
 
         // still call real console

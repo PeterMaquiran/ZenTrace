@@ -23,29 +23,6 @@ Decorate your functions with `@trace()`. Run your app. Open the **ZenTrace** pan
 npm install zentrace
 ```
 
-### Run any example
-
-1. Load the [ZenTrace Chrome extension](https://github.com/PeterMaquiran/ZenTrace) (`extension/` → Load unpacked)
-2. Copy one of the files below into your app (e.g. `checkout.ts`)
-3. Wire the exported `run*Example()` to a button and open DevTools → **ZenTrace**
-
-```html
-<button id="run">Run traced checkout</button>
-<script type="module">
-  import { runCheckoutExample } from './checkout.ts'
-
-  document.getElementById('run')?.addEventListener('click', () => {
-    void runCheckoutExample()
-  })
-</script>
-```
-
-> **TypeScript:** enable `"experimentalDecorators": true` in `tsconfig.json`.
-
-Or try them all: `pnpm dev:demo`
-
----
-
 ## Example: checkout flow
 
 Copy [`examples/checkout.ts`](examples/checkout.ts) → call `runCheckoutExample()`.
@@ -56,10 +33,7 @@ Copy [`examples/checkout.ts`](examples/checkout.ts) → call `runCheckoutExample
 <summary><code>examples/checkout.ts</code> — click to expand</summary>
 
 ```ts
-import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
-
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+import { Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -174,16 +148,7 @@ export function runCheckoutExample(orderId = `order-${Date.now()}`) {
 
 </details>
 
-```
-runCheckout (~550ms)
- ├── validateToken (80ms)
- ├── HTTP GET jsonplaceholder…/todos/1
- ├── calculatePrice (120ms)  ─┐ parallel
- ├── reserveStock (150ms)    ─┘
- └── charge (160ms)
-      ├── fraudCheck (60ms)
-      └── processGateway (100ms)
-```
+![Description](https://drive.google.com/uc?export=view&id=1x1TG4S1Wk5ixGI8cPklvgaSHq84x4bec)
 
 ---
 
@@ -197,10 +162,7 @@ Copy [`examples/parallel-order.ts`](examples/parallel-order.ts) → call `runPar
 <summary><code>examples/parallel-order.ts</code> — click to expand</summary>
 
 ```ts
-import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
-
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+import { Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -251,6 +213,8 @@ export function runParallelOrderExample(
 
 </details>
 
+![Description](https://drive.google.com/uc?export=view&id=13osbG0355Nd4wayC8o_r6lmKpjpR_S9D)
+
 ---
 
 ## Example: errors + retry
@@ -263,10 +227,7 @@ Copy [`examples/error-retry.ts`](examples/error-retry.ts) → call `runErrorRetr
 <summary><code>examples/error-retry.ts</code> — click to expand</summary>
 
 ```ts
-import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
-
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+import { Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -336,6 +297,8 @@ export function runErrorRetryExample(invoiceId = `inv-${Date.now()}`) {
 }
 ```
 
+![Description](https://drive.google.com/uc?export=view&id=1VTWLV1tlNqmmCKGtWuKlJHlqtN2Kzugi)
+
 </details>
 
 ---
@@ -348,10 +311,7 @@ Copy [`examples/trace-fn-cart.ts`](examples/trace-fn-cart.ts) → call `runTrace
 <summary><code>examples/trace-fn-cart.ts</code> — click to expand</summary>
 
 ```ts
-import { configureZenTrace, enableAutoTracing, traceFn } from 'zentrace'
-
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+import { traceFn } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -408,6 +368,8 @@ export function runTraceFnCartExample(userId = `user-${Date.now()}`) {
 }
 ```
 
+![Description](https://drive.google.com/uc?export=view&id=1hkceMZbWrFLhelLjIejqmskw_RF9hO1r)
+
 </details>
 
 ---
@@ -427,13 +389,5 @@ export function runTraceFnCartExample(userId = `user-${Date.now()}`) {
 ## API
 
 ```ts
-import {
-  trace,
-  traceFn,
-  configureZenTrace,
-  enableAutoTracing,
-  disableAutoTracing,
-  getActiveSpan,
-  type Span,
-} from 'zentrace'
+import { trace, traceFn, type Span } from 'zentrace'
 ```

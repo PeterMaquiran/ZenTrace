@@ -1,8 +1,5 @@
 import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
 
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
-
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
@@ -19,13 +16,13 @@ class PaymentGateway {
   async callProvider(amount: number, span: Span) {
     this.attempts += 1
     await sleep(70)
-    console.warn('gateway attempt', this.attempts)
+    span.console.warn('gateway attempt', this.attempts)
 
     if (this.attempts < 3) {
       throw new Error(`Gateway timeout (attempt ${this.attempts})`)
     }
 
-    console.info('gateway charge succeeded', { amount })
+    span.console.info('gateway charge succeeded', { amount })
     return { provider: 'stripe-mock', amount, chargeId: `ch_${Date.now()}` }
   }
 
@@ -42,7 +39,7 @@ class PaymentGateway {
         return await fn()
       } catch (error) {
         lastError = error
-        console.error('charge failed, retrying', {
+        span.console.error('charge failed, retrying', {
           attempt,
           error: String(error),
         })
@@ -59,7 +56,7 @@ class BillingService {
 
   @trace({ module: 'billing', captureArgs: true, captureResult: true })
   async processInvoice(invoiceId: string, span?: Span) {
-    console.info('processing invoice', invoiceId)
+    span?.console.info('processing invoice', invoiceId)
     const charge = await this.gateway.charge(149.99, span!)
     return { invoiceId, status: 'paid', charge }
   }

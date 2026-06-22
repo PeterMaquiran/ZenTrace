@@ -10,7 +10,7 @@ function sleep(ms: number) {
 const loadItems = traceFn(
   async (userId: string, span?: Span) => {
     await sleep(45)
-    console.log('loaded cart items', userId)
+    span?.console.log('loaded cart items', userId)
     return [
       { sku: 'BOOK-01', title: 'ZenTrace Guide', qty: 1, price: 29 },
       { sku: 'MUG-02', title: 'Dev Mug', qty: 2, price: 12 },
@@ -42,7 +42,7 @@ const finalizeCart = traceFn(
   async (userId: string, span?: Span) => {
     const items = await loadItems(userId, span)
     const priced = await applyCoupon(items, span)
-    console.info('cart ready', { userId, total: priced.total })
+    span?.console.info('cart ready', { userId, total: priced.total })
     return priced
   },
   {

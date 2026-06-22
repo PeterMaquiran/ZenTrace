@@ -10,9 +10,9 @@ function sleep(ms: number) {
 class AuthService {
   @trace({ module: 'auth', captureArgs: true, captureResult: true })
   async validateToken(token: string, span: Span) {
-    console.log('validating token', token)
+    span?.console.log('validating token', token)
     await sleep(80)
-    console.info('token validated', { userId: 'user_123' })
+    span?.console.info('token validated', { userId: 'user_123' })
     return { userId: 'user_123', roles: ['USER'] }
   }
 }
@@ -21,7 +21,7 @@ class PricingService {
   @trace({ module: 'pricing', captureArgs: true, captureResult: true })
   async calculatePrice(orderId: string, span: Span) {
     await sleep(120)
-    console.log('price calculated for', orderId)
+    span.console.log('price calculated for', orderId)
     const base = 100
     const tax = base * 0.23
     const discount = 10
@@ -33,7 +33,7 @@ class InventoryService {
   @trace({ module: 'inventory', captureArgs: true, captureResult: true })
   async reserveStock(orderId: string, span: Span) {
     await sleep(150)
-    console.info('stock reserved', { orderId, warehouse: 'EU-WEST-1' })
+    span.console.info('stock reserved', { orderId, warehouse: 'EU-WEST-1' })
     return { orderId, reserved: true, warehouse: 'EU-WEST-1' }
   }
 }
@@ -100,7 +100,7 @@ class CheckoutService {
 
     const payment = await this.payment.charge(price.total, user.userId, span!)
 
-    console.log('checkout completed', { orderId, total: price.total })
+    span?.console.log('checkout completed', { orderId, total: price.total })
     void this.notification.sendConfirmation(user.userId, span!)
 
     return { orderId, user, price, stock, payment }

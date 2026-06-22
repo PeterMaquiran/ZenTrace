@@ -8,6 +8,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeterMaquiran/ZenTrace.git"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

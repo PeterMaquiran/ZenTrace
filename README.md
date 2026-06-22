@@ -350,16 +350,43 @@ export function runTraceFnCartExample(userId = `user-${Date.now()}`) {
 
 ---
 
+## The Inspector Side Panel
+
+When you select any span in the **Span Tree** or **Timeline**, the right-hand side panel opens to provide a deep-dive breakdown of the span's metadata, payload, and lifecycle.
+
+### 1. Execution Overview & Custom Attributes
+
+Displays the core tracing metadata and any custom tags/attributes associated with the span:
+
+- **Timing Metadata:** Tracks the `Start Offset` (when the span started relative to the root trace) and the `Total Duration`.
+- **Share of Trace:** The percentage of the total trace execution time spent inside this span.
+- **Custom Attributes:** Displays key-value pairs like `Module` and `Hierarchy Depth` configured via your trace decorators.
+
+### 2. Input Arguments & Output Results
+
+When `captureArgs` or `captureResult` are enabled, the payload is serialized directly into the span attributes:
+
+- **Input Arguments:** An expandable JSON block showing the exact runtime parameters passed to the function.
+- **Output Result:** The resolved payload (or error object) captured when the span closed.
+
+### 3. Lifecycle Events
+
+Following standard distributed tracing patterns (akin to Zipkin annotations), this section displays timestamped events and logs tied to the span's lifecycle, allowing you to track exactly _when_ internal state changes or log statements occurred during the span's execution.
+
+![Description](https://drive.google.com/uc?export=view&id=1bNiIu-HQOwClUiHdNNtRsUOVGofBmhiU)
+
+---
+
 ## Chrome Extension
 
 This repository includes a Chrome DevTools extension.
 
 The extension source code is located in the extension/ folder at the root of the repository.
 
-1. To install it in Chrome:
-2. Open Chrome and go to chrome://extensions/
-3. Enable Developer mode (top right)
-4. Click “Load unpacked”
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable **Developer mode** (toggle in the top right corner).
+3. Click **Load unpacked** in the top left.
+4. Select the `extension/` folder from this repository.
 
 Select the extension/ folder from this repository
 Once installed, you’ll see the ZenTrace panel inside Chrome DevTools.

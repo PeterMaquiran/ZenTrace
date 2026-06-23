@@ -28,7 +28,7 @@ npm install zentrace
 Copy [examples/checkout.ts](examples/checkout.ts) → call `runCheckoutExample()`.
 
 ```ts
-import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
+import { Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -151,7 +151,7 @@ export function runCheckoutExample(orderId = `order-${Date.now()}`) {
 Copy [examples/parallel-order.ts](examples/parallel-order.ts) → call `runParallelOrderExample()`.
 
 ```ts
-import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
+import { Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -214,7 +214,7 @@ Copy [examples/error-retry.ts](examples/error-retry.ts) → call `runErrorRetryE
 `examples/error-retry.ts` — click to expand
 
 ```ts
-import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
+import { Span, trace } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -293,7 +293,7 @@ export function runErrorRetryExample(invoiceId = `inv-${Date.now()}`) {
 Copy [examples/trace-fn-cart.ts](examples/trace-fn-cart.ts) → call`runTraceFnCartExample()`.
 
 ```ts
-import { configureZenTrace, enableAutoTracing, Span, traceFn } from 'zentrace'
+import { Span, traceFn } from 'zentrace'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))

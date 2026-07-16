@@ -114,7 +114,7 @@ class CheckoutService {
 
 const checkout = new CheckoutService()
 
-/** Call this from a button click — same trace every time you run it. */
+/** Call this from a button click — one explicitly linked trace per invocation. */
 export function runCheckoutExample(orderId = `order-${Date.now()}`) {
   return checkout.runCheckout(orderId)
 }

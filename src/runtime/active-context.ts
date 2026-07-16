@@ -20,28 +20,6 @@ export function leaveSpan(span: Span) {
 
 export { getCurrentSpan, markSpan }
 
-export function resolveParentSpan(stack = captureStack()): Span | undefined {
-  const currentMarker = getFunctionMarker(stack)
-  let best: Span | undefined
-  let bestPosition = -1
-
-  for (const span of getActiveSpans()) {
-    const marker = getSpanMarker(span)
-    if (!marker || marker === currentMarker) continue
-
-    const position = stack.indexOf(marker)
-    if (position >= 0 && position > bestPosition) {
-      best = span
-      bestPosition = position
-    }
-  }
-
-  // Stack markers are unreliable for anonymous callbacks (e.g. useCallback +
-  // traceFn). Fall back to the active span stack while an outer span is still
-  // in scope.
-  return best ?? getCurrentSpan()
-}
-
 export function resolveSpanFromStack(stack = captureStack()): Span | undefined {
   const current = getCurrentSpan()
   if (current) return current
@@ -66,9 +44,4 @@ export function resolveSpanFromStack(stack = captureStack()): Span | undefined {
   }
 
   return best
-}
-
-export function runInSpanContext<R>(span: Span, callback: () => R): R {
-  void span
-  return callback()
 }

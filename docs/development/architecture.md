@@ -5,7 +5,7 @@
 Design a tracing core that:
 
 - ✅ Works out of the box (zero config)
-- ✅ Supports manual + automatic propagation
+- ✅ Uses explicit parent spans for deterministic propagation
 - ✅ Is exporter-agnostic (Zipkin, Jaeger, OpenTelemetry, New Relic)
 - ✅ Powers a local ZenTrace UI (no external dashboards required)
 
@@ -98,10 +98,8 @@ Tree structure:
 
 ### Start span
 
-Supports both:
-
-- implicit parent (via context)
-- explicit parent (manual propagation)
+Parent-child relationships are created only from an explicitly supplied parent
+span. A span without an explicit parent starts a new root trace.
 
 ---
 
@@ -128,19 +126,11 @@ SpanData (normalized)
 
 # 🔗 4. Context Propagation
 
-## Modes
+## Explicit propagation
 
-### 1. Automatic (default)
-
-- decorator handles everything
-- no developer involvement
-
----
-
-### 2. Manual (advanced)
-
-- `traceCtx` passed as last argument
-- reused across boundaries
+- The parent `Span` is passed as the last argument.
+- The decorator removes that parent from the user arguments and creates a child.
+- Calls without a parent `Span` create independent root traces.
 
 ---
 
@@ -305,18 +295,18 @@ SpanData {
 ## Responsibilities
 
 - wrap function
-- extract or create context
+- extract an explicitly supplied parent span or create a root
 - start span
-- inject updated context
+- supply the new span as the wrapped function's last argument
 - end span on resolve/reject
 
 ---
 
 ## Rules
 
-- context is always last argument
-- new span = new context
-- parent-child preserved
+- a parent span, when supplied, is always the last call argument
+- the wrapped function receives its own span as the last argument
+- no parent is inferred from the call stack or async runtime
 
 ---
 
@@ -334,7 +324,7 @@ SpanData {
 ### Function call
 
 1. decorator runs
-2. context extracted or created
+2. explicit parent extracted, or a root span created
 3. span started
 4. function executed
 5. span ended
@@ -362,7 +352,6 @@ Optional:
 
 # 🧠 12. Future Extensions
 
-- AsyncLocalStorage fallback (Node)
 - Browser support (fetch tracing)
 - HTTP auto-instrumentation
 - DB instrumentation
@@ -377,7 +366,7 @@ This design gives you:
 
 ✅ Local-first debugging (ZenTrace UI)
 ✅ Industry compatibility (Zipkin / OTEL / Jaeger)
-✅ Manual + automatic propagation
+✅ Predictable explicit propagation
 ✅ Zero-config developer experience
 
 ---

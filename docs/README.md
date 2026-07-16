@@ -1,6 +1,6 @@
 # 🚀 ZenTrace — See What Your Code _Actually_ Does
 
-> A zero-config JavaScript tracing debugger that shows function calls, arguments, and async flow in real time.
+> A JavaScript tracing debugger that shows function calls, arguments, and async flow in real time.
 
 ---
 
@@ -26,7 +26,7 @@ It lets you **see your code execution as a trace**, not guess it.
 - 🧠 **Arguments & results inspection**
 - 🔗 **Async flow visualization**
 - ❌ **Error tracing with full context**
-- ⚡ **Zero config — works in seconds**
+- ⚡ **Explicit parent spans for predictable trace trees**
 
 ---
 
@@ -35,22 +35,22 @@ It lets you **see your code execution as a trace**, not guess it.
 ### Your code
 
 ```ts
-import { trace } from 'zentrace'
+import { Span, trace } from 'zentrace'
 
 class UserService {
   @trace()
-  async getUser(id: string) {
-    const user = await this.fetchUser(id)
-    return this.validateUser(user)
+  async getUser(id: string, span?: Span) {
+    const user = await this.fetchUser(id, span!)
+    return this.validateUser(user, span!)
   }
 
   @trace()
-  async fetchUser(id: string) {
+  async fetchUser(id: string, span: Span) {
     return { id, name: 'Peter' }
   }
 
   @trace()
-  async validateUser(user: any) {
+  async validateUser(user: { id: string; name: string }, span: Span) {
     if (!user) throw new Error('Invalid user')
     return user
   }
@@ -82,13 +82,24 @@ npm install zentrace
 ## ⚡ Quick Start
 
 ```ts
-import { trace } from "zentrace"
+import { Span, trace } from 'zentrace'
 
-@trace()
-async function checkout(userId: string) {
-  const user = await getUser(userId)
-  const cart = await getCart(user.id)
-  return processPayment(cart)
+class CheckoutService {
+  @trace()
+  async checkout(userId: string, span?: Span) {
+    const user = await this.getUser(userId, span!)
+    return this.processPayment(user, span!)
+  }
+
+  @trace()
+  async getUser(userId: string, span: Span) {
+    return { id: userId }
+  }
+
+  @trace()
+  async processPayment(user: { id: string }, span: Span) {
+    return { userId: user.id, paid: true }
+  }
 }
 ```
 
@@ -117,7 +128,7 @@ ZenTrace:
    - execution time
    - errors
 
-3. Propagates context across async calls
+3. Links calls when a parent `Span` is passed explicitly
 4. Builds a trace tree
 5. Renders it in a visual UI
 
@@ -149,45 +160,31 @@ Trace failing tests and inspect inputs.
 
 ## 🧩 Advanced
 
-### 🔗 Context propagation
+### 🔗 Trace propagation
 
-ZenTrace automatically links function calls into a single trace:
-
-```ts
-@trace()
-async function A() {
-  await B()
-}
-
-@trace()
-async function B() {}
-```
-
-👉 A → B will be connected in the same trace.
-
----
-
-### 🧠 Manual trace propagation
-
-For advanced use cases (APIs, services, boundaries), you can explicitly pass the trace context:
+Pass the parent `Span` as the last argument whenever a traced call should be a
+child of another span:
 
 ```ts
-@trace()
-async function A(traceCtx?: TraceContext) {
-  await B(traceCtx)
-}
+class Service {
+  @trace()
+  async A(span?: Span) {
+    await this.B(span!)
+  }
 
-@trace()
-async function B(traceCtx?: TraceContext) {}
+  @trace()
+  async B(span: Span) {}
+}
 ```
 
 #### ⚙️ How it works
 
-- ZenTrace injects the current `traceCtx` as the **last argument**
-- If a context is already provided, it is reused
-- All calls remain part of the **same trace tree**
+- `@trace()` supplies the new span as the decorated method's last argument.
+- Passing that span to another traced method makes the new span its child.
+- Omitting the parent span starts a separate root trace.
 
-👉 This enables **cross-layer and cross-service tracing**
+Explicit propagation keeps parentage predictable across async and concurrent
+work.
 
 ---
 
@@ -211,7 +208,6 @@ async function B(traceCtx?: TraceContext) {}
 
 - [ ] Timeline visualization (waterfall)
 - [ ] Function replay
-- [ ] Async context engine (AsyncLocalStorage)
 - [ ] Express / Next.js plugins
 - [ ] OpenTelemetry export
 

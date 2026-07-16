@@ -85,6 +85,26 @@ describe('http tracing', () => {
     }
   })
 
+  it('links a patched fetch when the explicit parent header is present', async () => {
+    installHttpTracing()
+
+    await runSpan('parent', async (span) => {
+      await globalThis.fetch('https://example.com/api', {
+        headers: {
+          'x-zentrace-parent-span-id': span.context.spanId,
+        },
+      })
+    })
+
+    const spans = SpanStorage.getAll()
+    const parent = spans.find((span) => span.name === 'parent')
+    const http = spans.find((span) => span.name.startsWith('HTTP'))
+
+    expect(parent).toBeDefined()
+    expect(http?.context.parentId).toBe(parent?.context.spanId)
+    expect(http?.context.traceId).toBe(parent?.context.traceId)
+  })
+
   // 🔥 NEW TEST: attributes correctness
   it('adds http attributes to span', async () => {
     installHttpTracing()

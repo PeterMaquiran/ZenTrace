@@ -13,7 +13,7 @@ export type RunSpanOptions = {
   returnSpan?: boolean
   serviceName?: string
   marker?: string
-  /** Explicit parent — omit to start a new root trace (no automatic stack linking). */
+  /** Explicit parent — omit to start a new root trace. */
   parentSpan?: Span
 }
 

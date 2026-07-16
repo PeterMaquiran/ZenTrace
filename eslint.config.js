@@ -71,7 +71,7 @@ export default tseslint.config(
     },
   },
 
-  // Demo app uses automatic @trace propagation via stack context
+  // Demo app and examples intentionally include unused span parameters and logs
   {
     files: ['ui/demo/**/*.{ts,tsx}', 'examples/**/*.ts'],
     rules: {

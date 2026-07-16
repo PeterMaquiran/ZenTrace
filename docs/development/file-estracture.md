@@ -12,7 +12,7 @@ ZenTrace/
 │ │ ├── trace.ts
 │ │ └── types.ts
 │
-│ # 🔗 Propagation
+│ # 🔗 Explicit context transport
 │ ├── propagation/
 │ │ ├── extract.ts # extract ctx from args
 │ │ ├── inject.ts # inject ctx into args

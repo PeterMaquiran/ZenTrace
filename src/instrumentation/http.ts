@@ -1,8 +1,8 @@
+import type { Span } from '../core/span'
 import { runSpan } from '../runtime/run-span'
 import { extractParentSpanFromHeaders } from '../runtime/trace-runtime'
 import { inject } from '../util/inject'
 
-import type { Span } from '@/core/span'
 
 type HttpTraceOptions = {
   serviceName?: string
@@ -86,8 +86,7 @@ export async function traceFetch(
   const method = resolveMethod(input, init)
   const spanName = `HTTP ${method}`
   const headers = mergeHeaders(input, init)
-
-  const parentSpan = extractParentSpanFromHeaders(headers) || options.parentSpan
+  const parentSpan = extractParentSpanFromHeaders(headers) ?? options.parentSpan
 
   return runSpan(
     spanName,
@@ -116,7 +115,11 @@ export async function traceFetch(
 
       return response
     },
-    { serviceName: options.serviceName, module: 'http', parentSpan },
+    {
+      serviceName: options.serviceName,
+      module: 'http',
+      parentSpan,
+    },
   ) as Promise<Response>
 }
 

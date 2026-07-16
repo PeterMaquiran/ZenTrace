@@ -1,6 +1,6 @@
 @trace() (decorator)
 ↓
-propagation (extract/inject ctx)
+explicit parent Span (last argument, optional)
 ↓
 core/tracer (startSpan / endSpan)
 ↓

@@ -6,6 +6,8 @@ export type ZipkinExporterOptions = {
   /** Zipkin v2 spans endpoint. Defaults to http://localhost:9411/api/v2/spans */
   endpoint?: string
   authToken?: string
+  /** Overrides span localEndpoint.serviceName (default Tracer name, e.g. "zentrace"). */
+  serviceName?: string
 }
 
 const DEFAULT_ENDPOINT = 'http://localhost:9411/api/v2/spans'
@@ -17,16 +19,18 @@ export class ZipkinExporter implements Exporter {
 
   private readonly endpoint: string
   private readonly authToken?: string
+  private readonly serviceName?: string
 
   constructor(options: ZipkinExporterOptions = {}) {
     this.endpoint = options.endpoint ?? DEFAULT_ENDPOINT
     this.authToken = options.authToken
+    this.serviceName = options.serviceName
   }
 
   async export(span: SpanData): Promise<void> {
     // Must bypass patched fetch — otherwise HTTP auto-tracing re-exports forever.
     const fetchImpl = getUntracedFetch()
-    const body = serializeZipkinSpans([span])
+    const body = serializeZipkinSpans([span], this.serviceName)
     const res = await fetchImpl(this.endpoint, {
       method: 'POST',
       headers: {
@@ -45,7 +49,10 @@ export class ZipkinExporter implements Exporter {
 }
 
 /** Zipkin v2 requires timestamp/duration as integer microseconds (long). */
-export function toZipkinSpan(span: SpanData): Record<string, unknown> {
+export function toZipkinSpan(
+  span: SpanData,
+  serviceName?: string,
+): Record<string, unknown> {
   const durationUs = toLongMicros(span.duration)
 
   const payload: Record<string, unknown> = {
@@ -53,7 +60,9 @@ export function toZipkinSpan(span: SpanData): Record<string, unknown> {
     id: span.id,
     name: span.name,
     timestamp: toLongMicros(span.timestamp) ?? 0,
-    localEndpoint: span.localEndpoint,
+    localEndpoint: {
+      serviceName: serviceName ?? span.localEndpoint.serviceName,
+    },
   }
 
   if (span.parentId) payload.parentId = span.parentId
@@ -75,12 +84,15 @@ function toLongMicros(value: number | undefined | null): number | undefined {
   return Number.isFinite(n) ? n : undefined
 }
 
-function serializeZipkinSpans(spans: SpanData[]): string {
+function serializeZipkinSpans(spans: SpanData[], serviceName?: string): string {
   // Replacer is a last line of defense against float micros from any caller.
-  return JSON.stringify(spans.map(toZipkinSpan), (_key, value) => {
-    if (typeof value === 'number' && !Number.isInteger(value)) {
-      return Math.round(value)
-    }
-    return value
-  })
+  return JSON.stringify(
+    spans.map((span) => toZipkinSpan(span, serviceName)),
+    (_key, value) => {
+      if (typeof value === 'number' && !Number.isInteger(value)) {
+        return Math.round(value)
+      }
+      return value
+    },
+  )
 }

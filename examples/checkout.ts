@@ -3,7 +3,10 @@ import { enableZipkinExport } from 'zentrace/exporters/zipkin'
 
 configureZenTrace({ testMode: true })
 enableAutoTracing({ logs: true, http: true })
-enableZipkinExport({ endpoint: 'http://zipkin:9411/api/v2/spans' })
+enableZipkinExport({
+  endpoint: 'http://zipkin:9411/api/v2/spans',
+  serviceName: 'zentrace-demo',
+})
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))

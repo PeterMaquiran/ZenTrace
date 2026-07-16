@@ -106,6 +106,28 @@ describe('ZipkinExporter', () => {
     expect(raw).not.toContain('101599.99999403954')
   })
 
+  it('overrides localEndpoint.serviceName when serviceName is set', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const exporter = new ZipkinExporter({
+      endpoint: 'http://zipkin.test/api/v2/spans',
+      serviceName: 'checkout-api',
+    })
+
+    await exporter.export({
+      traceId: 'a'.repeat(32),
+      id: 'b'.repeat(16),
+      name: 'charge',
+      timestamp: 1,
+      duration: 1000,
+      localEndpoint: { serviceName: 'zentrace' },
+    })
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string)
+    expect(body[0].localEndpoint.serviceName).toBe('checkout-api')
+  })
+
   it('throws when Zipkin returns a non-2xx response', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,

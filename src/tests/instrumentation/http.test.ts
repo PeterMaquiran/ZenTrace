@@ -101,5 +101,18 @@ describe('http tracing', () => {
     expect(span?.attributes['http.status']).toBe('200')
   })
 
-  //
+  it('does not recurse when exporting to Zipkin with http tracing enabled', async () => {
+    installHttpTracing()
+    nativeFetch.mockClear()
+
+    await globalThis.fetch('http://zipkin:9411/api/v2/spans', {
+      method: 'POST',
+      body: '[]',
+    })
+
+    expect(nativeFetch).toHaveBeenCalledTimes(1)
+    expect(
+      SpanStorage.getAll().filter((span) => span.name.startsWith('HTTP')),
+    ).toHaveLength(0)
+  })
 })

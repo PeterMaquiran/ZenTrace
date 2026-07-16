@@ -21,6 +21,10 @@
     "./playwright": {
       "types": "./dist/playwright/index.d.ts",
       "import": "./dist/playwright/index.js"
+    },
+    "./exporters/zipkin": {
+      "types": "./dist/exporters/zipkin/index.d.ts",
+      "import": "./dist/exporters/zipkin/index.js"
     }
   },
   "packageManager": "pnpm@11.0.9",

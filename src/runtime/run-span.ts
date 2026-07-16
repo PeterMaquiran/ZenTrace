@@ -1,6 +1,6 @@
 import type { Span } from '../core/span'
 import { Tracer } from '../core/tracer'
-import { emitTrace } from '../exporters/browser/browser-export'
+import { dispatchSpan } from '../exporters/dispatch'
 import { SpanStorage } from '../storage/memory-storage'
 import { getTraceSession, SESSION_TAGS } from '../testing/session'
 
@@ -150,9 +150,7 @@ export async function runSpan<T>(
 }
 
 function emitSpan(span: Span, durationMs: number) {
-  if (typeof window !== 'undefined') {
-    emitTrace(span.toJSON(durationMs * 1000))
-  }
+  dispatchSpan(span.toJSON(durationMs * 1000))
 }
 
 function applySessionTags(span: Span) {

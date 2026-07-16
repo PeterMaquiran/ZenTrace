@@ -19,6 +19,7 @@ function resolveLogSpan(stack: string): Span | undefined {
 }
 
 function emitSpanUpdate(span: Span) {
+  // Live UI refresh only — exporters get the final span on completion.
   if (typeof window === 'undefined') return
 
   const durationMs = span.attributes.duration_ms

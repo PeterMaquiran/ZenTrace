@@ -120,12 +120,28 @@ export async function traceFetch(
   ) as Promise<Response>
 }
 
+/** Fetch that bypasses HTTP auto-tracing (for exporters / internal calls). */
+export function getUntracedFetch(): typeof fetch {
+  const state = getHttpTracingState()
+  if (state.installed && state.nativeFetch) return state.nativeFetch
+  return globalThis.fetch.bind(globalThis)
+}
+
+function isExporterRequest(url: string): boolean {
+  // Zipkin v2 ingestion — tracing these would recurse forever.
+  return url.includes('/api/v2/spans')
+}
+
 export function installHttpTracing(options: HttpTraceOptions = {}) {
   const nativeFetch = ensureNativeFetchCaptured()
   if (!nativeFetch) return
 
-  globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) =>
-    traceFetch(input, init, options)
+  globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    if (isExporterRequest(resolveUrl(input))) {
+      return nativeFetch(input, init)
+    }
+    return traceFetch(input, init, options)
+  }
 
   getHttpTracingState().installed = true
 }

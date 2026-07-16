@@ -63,7 +63,8 @@ export class Span {
       parentId: this.context.parentId,
       name: this.name,
       timestamp: this.startTime,
-      duration,
+      // Zipkin (and UI) expect integer microseconds — performance.now() is float.
+      duration: duration === undefined ? undefined : Math.round(duration),
       localEndpoint: {
         serviceName: this.serviceName,
       },
@@ -98,6 +99,7 @@ export class Span {
             ? Number(this.attributes.duration_ms)
             : undefined
 
+          // Live UI refresh only — exporters get the final span on completion.
           emitTrace(this.toJSON(durationMs ? durationMs * 1000 : undefined))
         }
 

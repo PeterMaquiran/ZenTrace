@@ -7,6 +7,15 @@ export * from './runtime/decorator/decorator'
 export * from './runtime/decorator/function'
 export { emitTrace } from './exporters/browser/browser-export'
 export {
+  registerExporter,
+  unregisterExporter,
+  clearExporters,
+  getExporters,
+  replaceExporter,
+} from './exporters/registry'
+export { dispatchSpan } from './exporters/dispatch'
+export type { Exporter } from './exporters/base'
+export {
   enableAutoTracing,
   disableAutoTracing,
   traceFetch,

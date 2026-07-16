@@ -27,6 +27,11 @@ export default defineConfig({
       '@': path.resolve(root, 'src'),
       '@ui': path.resolve(root, 'ui'),
       zentrace: path.resolve(root, 'src/index.ts'),
+      'zentrace/playwright': path.resolve(root, 'src/playwright/index.ts'),
+      'zentrace/exporters/zipkin': path.resolve(
+        root,
+        'src/exporters/zipkin/index.ts',
+      ),
     },
   },
   build: {

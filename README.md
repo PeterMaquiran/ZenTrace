@@ -23,6 +23,77 @@ Decorate your functions with `@trace()`. Run your app. Open the **ZenTrace** pan
 npm install zentrace
 ```
 
+## Structured logging and Loki
+
+`setLogger` routes `span.console.*` through Pino, Winston, or another structured
+logger using Pino's `(bindings, message)` call shape. Object arguments stay as
+JSON fields — they are never stringified into `message`.
+
+```ts
+import pino from 'pino'
+import { setLogger } from 'zentrace'
+
+const p = pino()
+
+setLogger({
+  info: p.info.bind(p),
+  error: p.error.bind(p),
+  debug: p.debug.bind(p),
+  warn: p.warn.bind(p),
+})
+
+// span.console.log('checkout completed', { orderId, total })
+// → p.info({ orderId, total, correlationId, traceId, spanId, ... }, 'checkout completed')
+```
+
+Winston needs a thin adapter because its argument order is `(message, meta)`:
+
+```ts
+import winston from 'winston'
+import { setLogger } from 'zentrace'
+
+const logger = winston.createLogger({
+  transports: [new winston.transports.Console()],
+})
+
+setLogger({
+  info: (bindings, message) =>
+    typeof bindings === 'string'
+      ? logger.info(bindings)
+      : logger.info(message ?? '', bindings),
+  error: (bindings, message) =>
+    typeof bindings === 'string'
+      ? logger.error(bindings)
+      : logger.error(message ?? '', bindings),
+  debug: (bindings, message) =>
+    typeof bindings === 'string'
+      ? logger.debug(bindings)
+      : logger.debug(message ?? '', bindings),
+})
+```
+
+Send captured span logs directly to Loki with the built-in exporter:
+
+```ts
+import { enableLokiExport } from 'zentrace/exporters/loki'
+
+enableLokiExport({
+  endpoint: 'http://localhost:3100/loki/api/v1/push',
+  labels: { environment: 'development' },
+  // tenantId: process.env.LOKI_TENANT_ID,
+  // authToken: `Bearer ${process.env.LOKI_TOKEN}`,
+})
+```
+
+Loki log lines contain OpenTelemetry-style `trace_id` / `span_id` fields.
+Configure a Grafana Loki derived field for `trace_id` that links to your Zipkin
+data source. Trace IDs are intentionally not Loki labels because that would
+create a high-cardinality stream per trace.
+
+When `@trace({ captureArgs: true, captureResult: true })` is enabled, each
+finished span also pushes a structured line with parsed `input` / `output`
+fields (plus `event: "span"`), even if the span had no `console` logs.
+
 ## Example: checkout flow
 
 Copy [examples/checkout.ts](examples/checkout.ts) → call `runCheckoutExample()`.

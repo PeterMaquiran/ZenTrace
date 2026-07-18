@@ -3,7 +3,7 @@ import { configureZenTrace, enableAutoTracing } from '../../src/index'
 import { demoExamples } from './examples'
 
 configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+enableAutoTracing({ http: true })
 
 const status = document.getElementById('status')
 const exampleList = document.getElementById('examples')

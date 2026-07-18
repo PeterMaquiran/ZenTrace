@@ -32,6 +32,10 @@ export default defineConfig({
         root,
         'src/exporters/zipkin/index.ts',
       ),
+      'zentrace/exporters/loki': path.resolve(
+        root,
+        'src/exporters/loki/index.ts',
+      ),
     },
   },
   build: {

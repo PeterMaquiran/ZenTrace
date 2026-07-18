@@ -1,4 +1,5 @@
 import type { SpanData } from '../core/types'
+import { writeStructuredLog } from '../logger'
 
 import { emitTrace } from './browser/browser-export'
 import { getExporters } from './registry'
@@ -8,7 +9,9 @@ export function dispatchSpan(data: SpanData): void {
 
   for (const exporter of getExporters()) {
     void exporter.export(span).catch((err: unknown) => {
-      console.error('[zentrace] exporter failed:', err)
+      const detail = err instanceof Error ? err.message : String(err)
+      const message = `[zentrace] exporter failed: ${detail}`
+      if (!writeStructuredLog('error', message)) console.error(message)
     })
   }
 

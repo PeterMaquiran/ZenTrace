@@ -9,7 +9,7 @@ args, timing, logs, and HTTP calls in the DevTools panel.
 import { configureZenTrace, enableAutoTracing } from 'zentrace'
 
 configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+enableAutoTracing({ http: true })
 ```
 
 `testMode` turns on `@trace({ captureArgs: true, captureResult: true })` by

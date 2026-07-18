@@ -1,9 +1,10 @@
 import { emitTrace } from '../exporters/browser/browser-export'
 import { recordSpanLog } from '../instrumentation/log-record'
 import { callOriginalConsole, type ConsoleLevel } from '../instrumentation/logs'
+import { writeStructuredLog } from '../logger'
 
 import { TraceContext } from './context'
-import { formatLogArgs } from './stack'
+import { parseLogArgs } from './stack'
 import type { SpanData } from './types'
 
 export class Span {
@@ -83,16 +84,16 @@ export class Span {
   }
 
   get console(): Record<ConsoleLevel, (...args: unknown[]) => void> {
-    const levels: ConsoleLevel[] = ['log', 'info', 'warn', 'error']
+    const levels: ConsoleLevel[] = ['debug', 'log', 'info', 'warn', 'error']
 
     const scoped: Partial<Record<ConsoleLevel, (...args: unknown[]) => void>> =
       {}
 
     for (const level of levels) {
       scoped[level] = (...args: unknown[]) => {
-        const message = formatLogArgs(args)
+        const { message, fields } = parseLogArgs(args)
 
-        recordSpanLog(this as any, level, message)
+        recordSpanLog(this as any, level, message, fields)
 
         if (typeof window !== 'undefined') {
           const durationMs = this.attributes.duration_ms
@@ -103,8 +104,11 @@ export class Span {
           emitTrace(this.toJSON(durationMs ? durationMs * 1000 : undefined))
         }
 
+        const loggerLevel = level === 'log' ? 'info' : level
+        const handled = writeStructuredLog(loggerLevel, message, this, fields)
+
         // Bypass the log-capture patch — this log is already on this span.
-        callOriginalConsole(level, args)
+        if (!handled) callOriginalConsole(level, args)
       }
     }
 

@@ -4,6 +4,13 @@ export * from './core/context'
 export * from './runtime/run-span'
 export * from './runtime/decorator/decorator'
 export * from './runtime/decorator/function'
+export {
+  getLogger,
+  resetLogger,
+  setLogger,
+  type CorrelatedLogRecord,
+  type Logger,
+} from './logger'
 export { emitTrace } from './exporters/browser/browser-export'
 export {
   registerExporter,
@@ -14,6 +21,7 @@ export {
 } from './exporters/registry'
 export { dispatchSpan } from './exporters/dispatch'
 export type { Exporter } from './exporters/base'
+export type { SpanData } from './core/types'
 export {
   enableAutoTracing,
   disableAutoTracing,

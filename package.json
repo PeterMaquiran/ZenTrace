@@ -25,6 +25,10 @@
     "./exporters/zipkin": {
       "types": "./dist/exporters/zipkin/index.d.ts",
       "import": "./dist/exporters/zipkin/index.js"
+    },
+    "./exporters/loki": {
+      "types": "./dist/exporters/loki/index.d.ts",
+      "import": "./dist/exporters/loki/index.js"
     }
   },
   "packageManager": "pnpm@11.0.9",

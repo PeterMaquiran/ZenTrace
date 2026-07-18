@@ -3,6 +3,7 @@ import type { Span } from '../core/span'
 export type StoredSpanLog = {
   level: string
   message: string
+  fields?: Record<string, unknown>
   ts: number
 }
 
@@ -12,12 +13,15 @@ export function recordSpanLog(
   span: Span,
   level: string,
   message: string,
+  fields?: Record<string, unknown>,
 ): void {
   span.addEvent(`[${level}] ${message}`)
   span.addAttribute(`log.${level}`, message)
 
   const entries = readStoredLogs(span.attributes[LOGS_TAG])
-  entries.push({ level, message, ts: Date.now() })
+  const entry: StoredSpanLog = { level, message, ts: Date.now() }
+  if (fields && Object.keys(fields).length > 0) entry.fields = fields
+  entries.push(entry)
   span.addAttribute(LOGS_TAG, JSON.stringify(entries))
 }
 

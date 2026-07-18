@@ -1,6 +1,6 @@
 import { enableAutoTracing, trace } from '../src/index'
 
-enableAutoTracing({ logs: true, http: true })
+enableAutoTracing({ http: true })
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))

@@ -1,11 +1,19 @@
 import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
 import { enableZipkinExport } from 'zentrace/exporters/zipkin'
+import { enableLokiExport } from 'zentrace/exporters/loki'
 
 configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+enableAutoTracing({ http: true })
 enableZipkinExport({
   endpoint: 'http://zipkin:9411/api/v2/spans',
   serviceName: 'zentrace-demo',
+})
+
+enableLokiExport({
+  endpoint: 'http://localhost:3100/loki/api/v1/push',
+  labels: { environment: 'development' },
+  // tenantId: process.env.LOKI_TENANT_ID,
+  // authToken: `Bearer ${process.env.LOKI_TOKEN}`,
 })
 
 function sleep(ms: number) {

@@ -1,5 +1,5 @@
-import type { SpanData } from '../core/types'
-import type { TraceSession } from '../testing/session'
+import type { SpanData } from '../core/types.js'
+import type { TraceSession } from '../testing/session.js'
 
 declare global {
   interface Window {

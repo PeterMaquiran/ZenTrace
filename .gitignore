@@ -16,3 +16,4 @@ screenshots
 /playwright/.cache/
 /playwright/.auth/
 user-data
+.pnpm-store

@@ -1,9 +1,8 @@
-import { configureZenTrace, enableAutoTracing } from '../../src/index'
+import { configureZenTrace } from '../../src/index'
 
 import { demoExamples } from './examples'
 
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+configureZenTrace({ capture: true })
 
 const status = document.getElementById('status')
 const exampleList = document.getElementById('examples')

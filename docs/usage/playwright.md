@@ -6,14 +6,17 @@ args, timing, logs, and HTTP calls in the DevTools panel.
 ## 1. Enable tracing in the app under test
 
 ```ts
-import { configureZenTrace, enableAutoTracing } from 'zentrace'
+import { configureZenTrace } from 'zentrace'
 
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+configureZenTrace({ capture: true })
 ```
 
-`testMode` turns on `@trace({ captureArgs: true, captureResult: true })` by
-default so the inspector shows function arguments and return values.
+`capture` turns on `captureArgs` / `captureResult` for both `@trace()` and
+`traceFn()` so the inspector shows function arguments and return values.
+
+Tag spans with `span.setAttribute('orderId', orderId)` (and `userId`,
+`amount`, …) so those fields show in the inspector and Zipkin. Do this on
+child spans, not only the root.
 
 ## 2. Attach the current test to each trace
 

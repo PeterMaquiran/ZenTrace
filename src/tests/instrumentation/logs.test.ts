@@ -5,7 +5,6 @@ import { installLogCapture, uninstallLogCapture } from '@/instrumentation/logs'
 import { trace } from '@/runtime/decorator/decorator'
 import { SpanStorage } from '@/storage/memory-storage'
 
-
 class LogService {
   @trace({ module: 'logs' })
   async run(message: string) {

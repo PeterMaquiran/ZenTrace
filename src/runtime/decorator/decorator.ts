@@ -1,9 +1,11 @@
-import type { Span } from '../../core/span'
-import { getZenTraceConfig } from '../../testing/configure'
-import { resolveManualPropagation } from '../../util/span-args'
-import { runSpan, type RunSpanOptions } from '../run-span'
+import type { Span } from '../../core/span.js'
+import { getZenTraceConfig } from '../../testing/configure.js'
+import { resolveManualPropagation } from '../../util/span-args.js'
+import { runSpan, type RunSpanOptions } from '../run-span.js'
 
 export type TraceOptions = {
+  /** Span name. Defaults to the method name (`@trace`) or function name (`traceFn`). */
+  name?: string
   module?: string
   captureArgs?: boolean
   captureResult?: boolean
@@ -36,7 +38,7 @@ export function trace(
       const { callArgs, parentSpan } = resolveManualPropagation(args)
 
       return runSpan(
-        propertyKey,
+        options.name ?? propertyKey,
         (span) => original.apply(this, [...callArgs, span]),
         {
           module: options.module,

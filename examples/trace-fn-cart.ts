@@ -1,7 +1,6 @@
-import { configureZenTrace, enableAutoTracing, Span, traceFn } from 'zentrace'
+import { configureZenTrace, Span, traceFn } from 'zentrace'
 
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+configureZenTrace({ capture: true })
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -9,6 +8,7 @@ function sleep(ms: number) {
 
 const loadItems = traceFn(
   async (userId: string, span?: Span) => {
+    span?.setAttribute('userId', userId)
     await sleep(45)
     span?.console.log('loaded cart items', userId)
     return [
@@ -28,7 +28,11 @@ const applyCoupon = traceFn(
   async (items: { sku: string; price: number; qty: number }[], span?: Span) => {
     await sleep(35)
     const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
-    return { items, subtotal, discount: 10, total: subtotal - 10 }
+    const total = subtotal - 10
+    span?.setAttribute('itemCount', items.length)
+    span?.setAttribute('subtotal', subtotal)
+    span?.setAttribute('total', total)
+    return { items, subtotal, discount: 10, total }
   },
   {
     module: 'cart',
@@ -40,8 +44,10 @@ const applyCoupon = traceFn(
 
 const finalizeCart = traceFn(
   async (userId: string, span?: Span) => {
+    span?.setAttribute('userId', userId)
     const items = await loadItems(userId, span)
     const priced = await applyCoupon(items, span)
+    span?.setAttribute('total', priced.total)
     span?.console.info('cart ready', { userId, total: priced.total })
     return priced
   },

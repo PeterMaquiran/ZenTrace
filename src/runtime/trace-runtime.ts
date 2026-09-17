@@ -1,4 +1,4 @@
-import type { Span } from '../core/span'
+import type { Span } from '../core/span.js'
 
 const RUNTIME_KEY = '__ZENTRACE_RUNTIME__'
 
@@ -61,7 +61,6 @@ export function extractParentSpanFromHeaders(
   if (headers instanceof Headers) {
     spanId = headers.get(PARENT_HEADER)
   } else {
-    // handle case-insensitive headers
     spanId =
       headers[PARENT_HEADER] ??
       headers[PARENT_HEADER.toLowerCase()] ??
@@ -73,7 +72,6 @@ export function extractParentSpanFromHeaders(
   const runtime = getTraceRuntime()
   const span = runtime.spanStack.find((span) => span.context.spanId === spanId)
 
-  // ✅ cleanup header (important)
   if (headers instanceof Headers) {
     headers.delete(PARENT_HEADER)
   } else {

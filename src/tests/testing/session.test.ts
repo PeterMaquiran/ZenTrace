@@ -12,9 +12,9 @@ import {
 } from '../../testing/session'
 
 describe('configureZenTrace', () => {
-  it('enables arg capture by default in test mode', () => {
+  it('enables arg and result capture when capture is on', () => {
     resetZenTraceConfig()
-    configureZenTrace({ testMode: true })
+    configureZenTrace({ capture: true })
 
     expect(getZenTraceConfig().captureArgs).toBe(true)
     expect(getZenTraceConfig().captureResult).toBe(true)

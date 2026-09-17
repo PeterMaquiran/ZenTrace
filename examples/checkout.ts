@@ -1,37 +1,55 @@
-import { configureZenTrace, enableAutoTracing, Span, trace } from 'zentrace'
+import { configureZenTrace, Span, trace } from 'zentrace'
+import { enableZipkinExport } from 'zentrace/exporters/zipkin'
+import { enableLokiExport } from 'zentrace/exporters/loki'
 
-configureZenTrace({ testMode: true })
-enableAutoTracing({ logs: true, http: true })
+configureZenTrace({ capture: true })
+enableZipkinExport({
+  endpoint: 'http://localhost:9411/api/v2/spans',
+  serviceName: 'zentrace-demo',
+})
+
+enableLokiExport({
+  endpoint: 'http://localhost:3100/loki/api/v1/push',
+  serviceName: 'zentrace-demo',
+  labels: { environment: 'development' },
+  nestFields: true,
+})
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 class AuthService {
-  @trace({ module: 'auth', captureArgs: true, captureResult: true })
+  @trace({ name: 'auth', captureArgs: false, captureResult: false })
   async validateToken(token: string, span: Span) {
-    span?.console.log('validating token', token)
+    span.setAttribute('userId', 'user_123')
+    span.console.log('validating token', token)
     await sleep(80)
-    span?.console.info('token validated', { userId: 'user_123' })
+    span.console.info('token validated', { userId: 'user_123' })
     return { userId: 'user_123', roles: ['USER'] }
   }
 }
 
 class PricingService {
-  @trace({ module: 'pricing', captureArgs: true, captureResult: true })
+  @trace({ name: 'pricing', captureArgs: false, captureResult: false })
   async calculatePrice(orderId: string, span: Span) {
+    span.setAttribute('orderId', orderId)
     await sleep(120)
-    span.console.log('price calculated for', orderId)
     const base = 100
     const tax = base * 0.23
     const discount = 10
-    return { orderId, total: base + tax - discount }
+    const total = base + tax - discount
+    span.setAttribute('total', total)
+    span.console.log('price calculated for', orderId)
+    return { orderId, total }
   }
 }
 
 class InventoryService {
-  @trace({ module: 'inventory', captureArgs: true, captureResult: true })
+  @trace({ name: 'inventory', captureArgs: false, captureResult: false })
   async reserveStock(orderId: string, span: Span) {
+    span.setAttribute('orderId', orderId)
+    span.setAttribute('warehouse', 'EU-WEST-1')
     await sleep(150)
     span.console.info('stock reserved', { orderId, warehouse: 'EU-WEST-1' })
     return { orderId, reserved: true, warehouse: 'EU-WEST-1' }
@@ -39,33 +57,44 @@ class InventoryService {
 }
 
 class PaymentService {
-  @trace({ module: 'payment', captureArgs: true, captureResult: true })
+  @trace({ name: 'payment', captureArgs: false, captureResult: false })
   async charge(amount: number, userId: string, span: Span) {
+    span.setAttribute('amount', amount)
+    span.setAttribute('userId', userId)
     const fraud = await this.fraudCheck(userId, span)
     const gateway = await this.processGateway(amount, span)
+    span.setAttribute('status', 'success')
     return { status: 'success', fraud, gateway }
   }
 
-  @trace({ module: 'fraud', captureArgs: true })
+  @trace({ name: 'fraud', captureArgs: false })
   async fraudCheck(userId: string, span: Span) {
+    span.setAttribute('userId', userId)
     await sleep(60)
+    span.setAttribute('risk', 'low')
     return { userId, risk: 'low' }
   }
 
-  @trace({ module: 'gateway', captureArgs: true })
+  @trace({ name: 'gateway', captureArgs: false })
   async processGateway(amount: number, span: Span) {
+    span.setAttribute('amount', amount)
+    span.setAttribute('provider', 'stripe-mock')
     await sleep(100)
+    const transactionId = `tx_${Date.now()}`
+    span.setAttribute('transactionId', transactionId)
     return {
       provider: 'stripe-mock',
       amount,
-      transactionId: `tx_${Date.now()}`,
+      transactionId,
     }
   }
 }
 
 class NotificationService {
-  @trace({ module: 'notification' })
+  @trace({ name: 'notification' })
   async sendConfirmation(userId: string, span: Span) {
+    span.setAttribute('userId', userId)
+    span.setAttribute('channel', 'email')
     await sleep(40)
     return { sent: true, channel: 'email', userId }
   }
@@ -80,12 +109,18 @@ class CheckoutService {
     private notification = new NotificationService(),
   ) {}
 
-  @trace({ module: 'checkout', captureArgs: true, captureResult: true })
+  @trace({
+    name: 'checkout',
+    captureArgs: false,
+    captureResult: false,
+  })
   async runCheckout(orderId: string, span?: Span) {
     const token = 'demo-token'
     console.info('checkout started', orderId)
+    span?.setAttribute('orderId', orderId)
 
     const user = await this.auth.validateToken(token, span!)
+    span?.setAttribute('userId', user.userId)
 
     await fetch('https://jsonplaceholder.typicode.com/todos/1', {
       headers: {
@@ -99,6 +134,7 @@ class CheckoutService {
     ])
 
     const payment = await this.payment.charge(price.total, user.userId, span!)
+    span?.setAttribute('total', price.total)
 
     span?.console.log('checkout completed', { orderId, total: price.total })
     void this.notification.sendConfirmation(user.userId, span!)
@@ -109,7 +145,7 @@ class CheckoutService {
 
 const checkout = new CheckoutService()
 
-/** Call this from a button click — same trace every time you run it. */
+/** Call this from a button click — one explicitly linked trace per invocation. */
 export function runCheckoutExample(orderId = `order-${Date.now()}`) {
   return checkout.runCheckout(orderId)
 }

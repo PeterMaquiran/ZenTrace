@@ -1,5 +1,5 @@
-import { TraceContext } from './context'
-import { Span } from './span'
+import { TraceContext } from './context.js'
+import { Span } from './span.js'
 
 export class Tracer {
   constructor(private serviceName: string) {}

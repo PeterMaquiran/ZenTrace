@@ -1,10 +1,11 @@
-import type { Span } from '../core/span'
-import { Tracer } from '../core/tracer'
-import { emitTrace } from '../exporters/browser/browser-export'
-import { SpanStorage } from '../storage/memory-storage'
-import { getTraceSession, SESSION_TAGS } from '../testing/session'
+import type { Span } from '../core/span.js'
+import { Tracer } from '../core/tracer.js'
+import { dispatchSpan } from '../exporters/dispatch.js'
+import { ensureHttpTracing } from '../instrumentation/http-auto.js'
+import { SpanStorage } from '../storage/memory-storage.js'
+import { getTraceSession, SESSION_TAGS } from '../testing/session.js'
 
-import { enterSpan, leaveSpan, markSpan } from './active-context'
+import { enterSpan, leaveSpan, markSpan } from './active-context.js'
 
 export type RunSpanOptions = {
   module?: string
@@ -13,7 +14,7 @@ export type RunSpanOptions = {
   returnSpan?: boolean
   serviceName?: string
   marker?: string
-  /** Explicit parent — omit to start a new root trace (no automatic stack linking). */
+  /** Explicit parent — omit to start a new root trace. */
   parentSpan?: Span
 }
 
@@ -26,6 +27,8 @@ type SpanRun = {
 }
 
 function beginSpanRun(name: string, options: RunSpanOptions): SpanRun {
+  ensureHttpTracing()
+
   const parent = options.parentSpan
   const tracer = options.serviceName
     ? new Tracer(options.serviceName)
@@ -150,9 +153,7 @@ export async function runSpan<T>(
 }
 
 function emitSpan(span: Span, durationMs: number) {
-  if (typeof window !== 'undefined') {
-    emitTrace(span.toJSON(durationMs * 1000))
-  }
+  dispatchSpan(span.toJSON(durationMs * 1000))
 }
 
 function applySessionTags(span: Span) {

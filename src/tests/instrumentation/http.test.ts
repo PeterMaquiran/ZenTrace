@@ -24,6 +24,17 @@ describe('http tracing', () => {
     vi.unstubAllGlobals()
   })
 
+  it('patches fetch when a span starts', async () => {
+    await runSpan('parent', async () => {
+      await globalThis.fetch('https://example.com/api')
+    })
+
+    expect(nativeFetch).toHaveBeenCalledTimes(1)
+    expect(
+      SpanStorage.getAll().filter((span) => span.name.startsWith('HTTP')),
+    ).toHaveLength(1)
+  })
+
   it('does not recurse when global fetch is patched', async () => {
     installHttpTracing()
     nativeFetch.mockClear()
@@ -85,6 +96,26 @@ describe('http tracing', () => {
     }
   })
 
+  it('links a patched fetch when the explicit parent header is present', async () => {
+    installHttpTracing()
+
+    await runSpan('parent', async (span) => {
+      await globalThis.fetch('https://example.com/api', {
+        headers: {
+          'x-zentrace-parent-span-id': span.context.spanId,
+        },
+      })
+    })
+
+    const spans = SpanStorage.getAll()
+    const parent = spans.find((span) => span.name === 'parent')
+    const http = spans.find((span) => span.name.startsWith('HTTP'))
+
+    expect(parent).toBeDefined()
+    expect(http?.context.parentId).toBe(parent?.context.spanId)
+    expect(http?.context.traceId).toBe(parent?.context.traceId)
+  })
+
   // 🔥 NEW TEST: attributes correctness
   it('adds http attributes to span', async () => {
     installHttpTracing()
@@ -101,5 +132,18 @@ describe('http tracing', () => {
     expect(span?.attributes['http.status']).toBe('200')
   })
 
-  //
+  it('does not recurse when exporting to Zipkin with http tracing enabled', async () => {
+    installHttpTracing()
+    nativeFetch.mockClear()
+
+    await globalThis.fetch('http://zipkin:9411/api/v2/spans', {
+      method: 'POST',
+      body: '[]',
+    })
+
+    expect(nativeFetch).toHaveBeenCalledTimes(1)
+    expect(
+      SpanStorage.getAll().filter((span) => span.name.startsWith('HTTP')),
+    ).toHaveLength(0)
+  })
 })

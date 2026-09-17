@@ -1,14 +1,14 @@
-import type { Span } from '../core/span'
-import { captureStack, formatLogArgs } from '../core/stack'
-import { emitTrace } from '../exporters/browser/browser-export'
-import { resolveSpanFromStack } from '../runtime/active-context'
-import { getCurrentSpan } from '../runtime/trace-runtime'
+import type { Span } from '../core/span.js'
+import { captureStack, parseLogArgs } from '../core/stack.js'
+import { emitTrace } from '../exporters/browser/browser-export.js'
+import { resolveSpanFromStack } from '../runtime/active-context.js'
+import { getCurrentSpan } from '../runtime/trace-runtime.js'
 
-import { recordSpanLog } from './log-record'
+import { recordSpanLog } from './log-record.js'
 
-export type ConsoleLevel = 'log' | 'info' | 'warn' | 'error'
+export type ConsoleLevel = 'debug' | 'log' | 'info' | 'warn' | 'error'
 
-const levels: ConsoleLevel[] = ['log', 'info', 'warn', 'error']
+const levels: ConsoleLevel[] = ['debug', 'log', 'info', 'warn', 'error']
 const originals = new Map<ConsoleLevel, (...args: unknown[]) => void>()
 
 let installed = false
@@ -19,6 +19,7 @@ function resolveLogSpan(stack: string): Span | undefined {
 }
 
 function emitSpanUpdate(span: Span) {
+  // Live UI refresh only — exporters get the final span on completion.
   if (typeof window === 'undefined') return
 
   const durationMs = span.attributes.duration_ms
@@ -29,8 +30,8 @@ function emitSpanUpdate(span: Span) {
 }
 
 function attachLog(span: Span, level: ConsoleLevel, args: unknown[]) {
-  const message = formatLogArgs(args)
-  recordSpanLog(span, level, message)
+  const { message, fields } = parseLogArgs(args)
+  recordSpanLog(span, level, message, fields)
   emitSpanUpdate(span)
 }
 

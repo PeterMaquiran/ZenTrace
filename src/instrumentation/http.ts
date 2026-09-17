@@ -1,8 +1,9 @@
-import { runSpan } from '../runtime/run-span'
-import { extractParentSpanFromHeaders } from '../runtime/trace-runtime'
-import { inject } from '../util/inject'
+import type { Span } from '../core/span.js'
+import { runSpan } from '../runtime/run-span.js'
+import { extractParentSpanFromHeaders } from '../runtime/trace-runtime.js'
+import { inject } from '../util/inject.js'
 
-import type { Span } from '@/core/span'
+import { registerHttpTracingEnsure } from './http-auto.js'
 
 type HttpTraceOptions = {
   serviceName?: string
@@ -86,8 +87,7 @@ export async function traceFetch(
   const method = resolveMethod(input, init)
   const spanName = `HTTP ${method}`
   const headers = mergeHeaders(input, init)
-
-  const parentSpan = extractParentSpanFromHeaders(headers) || options.parentSpan
+  const parentSpan = extractParentSpanFromHeaders(headers) ?? options.parentSpan
 
   return runSpan(
     spanName,
@@ -116,19 +116,47 @@ export async function traceFetch(
 
       return response
     },
-    { serviceName: options.serviceName, module: 'http', parentSpan },
+    {
+      serviceName: options.serviceName,
+      module: 'http',
+      parentSpan,
+    },
   ) as Promise<Response>
+}
+
+/** Fetch that bypasses HTTP auto-tracing (for exporters / internal calls). */
+export function getUntracedFetch(): typeof fetch {
+  const state = getHttpTracingState()
+  if (state.installed && state.nativeFetch) return state.nativeFetch
+  return globalThis.fetch.bind(globalThis)
+}
+
+function isExporterRequest(url: string): boolean {
+  // Zipkin v2 ingestion — tracing these would recurse forever.
+  return url.includes('/api/v2/spans')
 }
 
 export function installHttpTracing(options: HttpTraceOptions = {}) {
   const nativeFetch = ensureNativeFetchCaptured()
   if (!nativeFetch) return
 
-  globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) =>
-    traceFetch(input, init, options)
+  globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    if (isExporterRequest(resolveUrl(input))) {
+      return nativeFetch(input, init)
+    }
+    return traceFetch(input, init, options)
+  }
 
   getHttpTracingState().installed = true
 }
+
+/** Patches `fetch` on first span so HTTP shows in the dashboard. */
+export function ensureHttpTracing() {
+  if (getHttpTracingState().installed) return
+  installHttpTracing()
+}
+
+registerHttpTracingEnsure(ensureHttpTracing)
 
 export function uninstallHttpTracing() {
   const state = getHttpTracingState()

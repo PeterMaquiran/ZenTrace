@@ -1,7 +1,7 @@
-import type { SpanData } from '../../core/types'
-import { getUntracedFetch } from '../../instrumentation/http'
-import { readStoredLogs } from '../../instrumentation/log-record'
-import type { Exporter } from '../base'
+import type { SpanData } from '../../core/types.js'
+import { getUntracedFetch } from '../../instrumentation/http.js'
+import { readStoredLogs } from '../../instrumentation/log-record.js'
+import type { Exporter } from '../base.js'
 
 export type LokiExporterOptions = {
   /** Loki push endpoint. Defaults to `http://localhost:3100/loki/api/v1/push`. */
@@ -16,6 +16,11 @@ export type LokiExporterOptions = {
   labels?: Record<string, string>
   /** Extra request headers (merged after Content-Type / Authorization / tenant). */
   headers?: Record<string, string>
+  /**
+   * Nest dynamic log fields under `fields` so Grafana shows a stable first
+   * level (`level`, `message`, `trace_id`, …) and expandable payload.
+   */
+  nestFields?: boolean
 }
 
 type LokiValue = [timestamp: string, line: string]
@@ -77,7 +82,10 @@ export class LokiExporter implements Exporter {
 
 export function toLokiStreams(
   span: SpanData,
-  options: Pick<LokiExporterOptions, 'labels' | 'serviceName'> = {},
+  options: Pick<
+    LokiExporterOptions,
+    'labels' | 'serviceName' | 'nestFields'
+  > = {},
 ): LokiStream[] {
   const lines = collectLokiLines(span)
   if (lines.length === 0) return []
@@ -101,20 +109,37 @@ export function toLokiStreams(
 
     stream.values.push([
       toNanoseconds(line.timestampMs),
-      JSON.stringify({
-        ...(line.fields ?? {}),
-        timestamp: new Date(line.timestampMs).toISOString(),
-        level: line.level,
-        message: line.message,
-        trace_id: span.traceId,
-        span_id: span.id,
-        ...(span.parentId ? { parent_span_id: span.parentId } : {}),
-        span_name: span.name,
-      }),
+      JSON.stringify(toLokiLineBody(span, line, options.nestFields)),
     ])
   }
 
   return [...streams.values()]
+}
+
+function toLokiLineBody(
+  span: SpanData,
+  line: LokiLine,
+  nestFields?: boolean,
+): Record<string, unknown> {
+  const predefined: Record<string, unknown> = {
+    timestamp: new Date(line.timestampMs).toISOString(),
+    level: line.level,
+    message: line.message,
+    trace_id: span.traceId,
+    span_id: span.id,
+    ...(span.parentId ? { parent_span_id: span.parentId } : {}),
+    span_name: span.name,
+  }
+
+  if (!line.fields || Object.keys(line.fields).length === 0) {
+    return predefined
+  }
+
+  if (nestFields) {
+    return { ...predefined, fields: line.fields }
+  }
+
+  return { ...line.fields, ...predefined }
 }
 
 function collectLokiLines(span: SpanData): LokiLine[] {
@@ -123,7 +148,7 @@ function collectLokiLines(span: SpanData): LokiLine[] {
   for (const log of readStoredLogs(span.tags?.['zentrace.logs'])) {
     lines.push({
       timestampMs: log.ts,
-      level: log.level,
+      level: toLokiLevel(log.level),
       message: log.message,
       fields: log.fields,
     })
@@ -158,6 +183,11 @@ function spanIoLine(span: SpanData): LokiLine | undefined {
     message: span.name,
     fields,
   }
+}
+
+/** Loki / Grafana treat `log` as unknown — `console.log` maps to `info`. */
+function toLokiLevel(level: string): string {
+  return level === 'log' ? 'info' : level
 }
 
 function parseTagJson(raw: string | undefined): unknown {

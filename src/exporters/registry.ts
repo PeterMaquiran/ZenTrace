@@ -1,4 +1,4 @@
-import type { Exporter } from './base'
+import type { Exporter } from './base.js'
 
 const REGISTRY_KEY = '__ZENTRACE_EXPORTERS__'
 

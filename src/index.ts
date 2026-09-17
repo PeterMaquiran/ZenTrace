@@ -1,17 +1,17 @@
-export * from './core/tracer'
-export * from './core/span'
-export * from './core/context'
-export * from './runtime/run-span'
-export * from './runtime/decorator/decorator'
-export * from './runtime/decorator/function'
+export * from './core/tracer.js'
+export * from './core/span.js'
+export * from './core/context.js'
+export * from './runtime/run-span.js'
+export * from './runtime/decorator/decorator.js'
+export * from './runtime/decorator/function.js'
 export {
   getLogger,
   resetLogger,
   setLogger,
   type CorrelatedLogRecord,
   type Logger,
-} from './logger'
-export { emitTrace } from './exporters/browser/browser-export'
+} from './logger.js'
+export { emitTrace } from './exporters/browser/browser-export.js'
 export {
   registerExporter,
   unregisterExporter,
@@ -19,17 +19,15 @@ export {
   clearExporters,
   getExporters,
   replaceExporter,
-} from './exporters/registry'
-export { dispatchSpan } from './exporters/dispatch'
-export type { Exporter } from './exporters/base'
-export type { SpanData } from './core/types'
+} from './exporters/registry.js'
+export { dispatchSpan } from './exporters/dispatch.js'
+export type { Exporter } from './exporters/base.js'
+export type { SpanData } from './core/types.js'
 export {
-  enableAutoTracing,
-  disableAutoTracing,
   traceFetch,
   installLogCapture,
   installHttpTracing,
-} from './instrumentation/index'
+} from './instrumentation/index.js'
 export {
   configureZenTrace,
   getZenTraceConfig,
@@ -42,14 +40,14 @@ export {
   SESSION_TAGS,
   type ZenTraceConfig,
   type TraceSession,
-} from './testing/index'
+} from './testing/index.js'
 export {
   attachZenTrace,
   createSessionFromTestInfo,
   zenTraceSessionInitScript,
   type ZenTracePage,
   type ZenTraceTestInfo,
-} from './playwright/index'
+} from './playwright/index.js'
 
 // export * from "./propagation/headers";
 // export * from "./propagation/extract";

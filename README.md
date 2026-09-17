@@ -12,12 +12,12 @@ Async JavaScript is hard to debug. A bug in `checkout()` might come from `valida
 
 Decorate your functions with `@trace()`. Run your app. Open the **ZenTrace** panel in Chrome DevTools.
 
-|                 |                                          |
-| --------------- | ---------------------------------------- |
-| **Span tree**   | which function called which              |
-| **Timeline**    | how long each step took                  |
-| **Inspector**   | arguments, return values, errors         |
-| **Logs + HTTP** | `console.`\* and `fetch` linked to spans |
+|                 |                                               |
+| --------------- | --------------------------------------------- |
+| **Span tree**   | which function called which                   |
+| **Timeline**    | how long each step took                       |
+| **Inspector**   | arguments, return values, `setAttribute` tags |
+| **Logs + HTTP** | `console.`\* and `fetch` linked to spans      |
 
 ```bash
 npm install zentrace
@@ -74,9 +74,9 @@ setLogger({
 
 ## Export to Zipkin and Loki
 
-Call these once at process startup — typically next to `configureZenTrace()`
-and `enableAutoTracing()`. [examples/checkout.ts](examples/checkout.ts) shows
-the full setup.
+Call these once at process startup — typically next to `configureZenTrace()`.
+[examples/checkout.ts](examples/checkout.ts) shows the full setup.
+Fetch is traced automatically when a `@trace` / `traceFn` span starts.
 
 ```ts
 import { enableZipkinExport } from 'zentrace/exporters/zipkin'
@@ -91,6 +91,7 @@ enableLokiExport({
   endpoint: 'http://localhost:3100/loki/api/v1/push',
   serviceName: 'checkout-api',
   labels: { environment: 'development' },
+  nestFields: true,
 })
 ```
 
@@ -98,18 +99,60 @@ Defaults are local Zipkin (`9411`) and Loki (`3100`) if you omit `endpoint`.
 A second call with the same exporter **replaces** the previous one. Use
 `disableZipkinExport()` / `disableLokiExport()` to stop sending.
 
-| Option        | Zipkin | Loki | Notes                                                            |
-| ------------- | ------ | ---- | ---------------------------------------------------------------- |
-| `endpoint`    | ✓      | ✓    | HTTP POST destination                                            |
-| `serviceName` | ✓      | ✓    | Zipkin `localEndpoint`; Loki `service_name` label                |
-| `authToken`   | ✓      | ✓    | Full `Authorization` value, e.g. `Bearer ${process.env.TOKEN}`   |
-| `headers`     | ✓      | ✓    | Extra request headers                                            |
-| `labels`      |        | ✓    | Low-cardinality stream labels only (`environment`, `cluster`, …) |
-| `tenantId`    |        | ✓    | Grafana Cloud / multi-tenant Loki (`X-Scope-OrgID`)              |
+| Option        | Zipkin | Loki | Notes                                                               |
+| ------------- | ------ | ---- | ------------------------------------------------------------------- |
+| `endpoint`    | ✓      | ✓    | HTTP POST destination                                               |
+| `serviceName` | ✓      | ✓    | Zipkin `localEndpoint`; Loki `service_name` label                   |
+| `authToken`   | ✓      | ✓    | Full `Authorization` value, e.g. `Bearer ${process.env.TOKEN}`      |
+| `headers`     | ✓      | ✓    | Extra request headers                                               |
+| `labels`      |        | ✓    | Low-cardinality stream labels only (`environment`, `cluster`, …)    |
+| `tenantId`    |        | ✓    | Grafana Cloud / multi-tenant Loki (`X-Scope-OrgID`)                 |
+| `nestFields`  |        | ✓    | Put dynamic payload under `fields` (Grafana JSON is easier to scan) |
 
-Zipkin receives one v2 span per finished function. Loki receives `span.console.*`
-lines plus, when `captureArgs` / `captureResult` are on, a structured
-`event: "span"` line with parsed `input` / `output`.
+Zipkin receives one v2 span per finished function. It never sends
+`zentrace.logs`, captured `input` / `output` from `captureArgs` /
+`captureResult`, or the auto-traced `HTTP <method>` spans. Those stay in Loki
+and DevTools.
+
+Use **`span.setAttribute()`** for values you want on the span itself — Zipkin
+tags, inspector fields, and filters. Prefer that over stuffing IDs into
+`console.log` objects. Tag each hop (`orderId`, `userId`, `amount`, …), not
+only the root.
+
+```ts
+enableZipkinExport({
+  endpoint: 'http://localhost:9411/api/v2/spans',
+  serviceName: 'checkout-api',
+})
+
+class CheckoutService {
+  @trace({ name: 'checkout' })
+  async runCheckout(orderId: string, span?: Span) {
+    span?.setAttribute('orderId', orderId)
+    const user = await this.auth.validateToken(token, span!)
+    span?.setAttribute('userId', user.userId)
+    const price = await this.pricing.calculatePrice(orderId, span!)
+    span?.setAttribute('total', price.total)
+  }
+}
+
+class PricingService {
+  @trace({ name: 'pricing' })
+  async calculatePrice(orderId: string, span: Span) {
+    span.setAttribute('orderId', orderId)
+    const total = 113
+    span.setAttribute('total', total)
+    return { orderId, total }
+  }
+}
+```
+
+`setAttribute('input', …)` / `setAttribute('output', …)` is the only way those
+keys reach Zipkin — captured decorator I/O does not.
+
+Loki receives `span.console.*` lines plus, when `captureArgs` /
+`captureResult` are on, a structured `event: "span"` line with parsed
+`input` / `output`.
 
 Log JSON uses OpenTelemetry-style `trace_id`, `span_id`, `parent_span_id`, and
 `span_name`. Configure a Grafana Loki derived field on `trace_id` that links
@@ -119,7 +162,9 @@ creates a high-cardinality stream per trace.
 ## Example: checkout flow
 
 Copy [examples/checkout.ts](examples/checkout.ts) → call `runCheckoutExample()`.
-The file also enables Zipkin + Loki export (see above).
+The file also enables Zipkin + Loki export (see above). Tag each span with
+`setAttribute` so Zipkin and the inspector show `orderId`, `userId`, amounts,
+and status — not only the root checkout span.
 
 ```ts
 import { Span, trace } from 'zentrace'
@@ -129,30 +174,33 @@ function sleep(ms: number) {
 }
 
 class AuthService {
-  @trace({ module: 'auth', captureArgs: true, captureResult: true })
+  @trace({ name: 'auth', captureArgs: true, captureResult: true })
   async validateToken(token: string, span: Span) {
-    span?.console.log('validating token', token)
+    span.setAttribute('userId', 'user_123')
+    span.console.log('validating token', token)
     await sleep(80)
-    span?.console.info('token validated', { userId: 'user_123' })
+    span.console.info('token validated', { userId: 'user_123' })
     return { userId: 'user_123', roles: ['USER'] }
   }
 }
 
 class PricingService {
-  @trace({ module: 'pricing', captureArgs: true, captureResult: true })
+  @trace({ name: 'pricing', captureArgs: true, captureResult: true })
   async calculatePrice(orderId: string, span: Span) {
+    span.setAttribute('orderId', orderId)
     await sleep(120)
+    const total = 100 * 1.23 - 10
+    span.setAttribute('total', total)
     span.console.log('price calculated for', orderId)
-    const base = 100
-    const tax = base * 0.23
-    const discount = 10
-    return { orderId, total: base + tax - discount }
+    return { orderId, total }
   }
 }
 
 class InventoryService {
-  @trace({ module: 'inventory', captureArgs: true, captureResult: true })
+  @trace({ name: 'inventory', captureArgs: true, captureResult: true })
   async reserveStock(orderId: string, span: Span) {
+    span.setAttribute('orderId', orderId)
+    span.setAttribute('warehouse', 'EU-WEST-1')
     await sleep(150)
     span.console.info('stock reserved', { orderId, warehouse: 'EU-WEST-1' })
     return { orderId, reserved: true, warehouse: 'EU-WEST-1' }
@@ -160,33 +208,40 @@ class InventoryService {
 }
 
 class PaymentService {
-  @trace({ module: 'payment', captureArgs: true, captureResult: true })
+  @trace({ name: 'payment', captureArgs: true, captureResult: true })
   async charge(amount: number, userId: string, span: Span) {
+    span.setAttribute('amount', amount)
+    span.setAttribute('userId', userId)
     const fraud = await this.fraudCheck(userId, span)
     const gateway = await this.processGateway(amount, span)
+    span.setAttribute('status', 'success')
     return { status: 'success', fraud, gateway }
   }
 
-  @trace({ module: 'fraud', captureArgs: true })
+  @trace({ name: 'fraud', captureArgs: true })
   async fraudCheck(userId: string, span: Span) {
+    span.setAttribute('userId', userId)
     await sleep(60)
+    span.setAttribute('risk', 'low')
     return { userId, risk: 'low' }
   }
 
-  @trace({ module: 'gateway', captureArgs: true })
+  @trace({ name: 'gateway', captureArgs: true })
   async processGateway(amount: number, span: Span) {
+    span.setAttribute('amount', amount)
+    span.setAttribute('provider', 'stripe-mock')
     await sleep(100)
-    return {
-      provider: 'stripe-mock',
-      amount,
-      transactionId: `tx_${Date.now()}`,
-    }
+    const transactionId = `tx_${Date.now()}`
+    span.setAttribute('transactionId', transactionId)
+    return { provider: 'stripe-mock', amount, transactionId }
   }
 }
 
 class NotificationService {
-  @trace({ module: 'notification' })
+  @trace({ name: 'notification' })
   async sendConfirmation(userId: string, span: Span) {
+    span.setAttribute('userId', userId)
+    span.setAttribute('channel', 'email')
     await sleep(40)
     return { sent: true, channel: 'email', userId }
   }
@@ -201,12 +256,18 @@ class CheckoutService {
     private notification = new NotificationService(),
   ) {}
 
-  @trace({ module: 'checkout', captureArgs: true, captureResult: true })
+  @trace({
+    name: 'checkout',
+    captureArgs: true,
+    captureResult: true,
+  })
   async runCheckout(orderId: string, span?: Span) {
     const token = 'demo-token'
     console.info('checkout started', orderId)
+    span?.setAttribute('orderId', orderId)
 
     const user = await this.auth.validateToken(token, span!)
+    span?.setAttribute('userId', user.userId)
 
     await fetch('https://jsonplaceholder.typicode.com/todos/1', {
       headers: {
@@ -220,6 +281,7 @@ class CheckoutService {
     ])
 
     const payment = await this.payment.charge(price.total, user.userId, span!)
+    span?.setAttribute('total', price.total)
 
     span?.console.log('checkout completed', { orderId, total: price.total })
     void this.notification.sendConfirmation(user.userId, span!)
@@ -252,8 +314,9 @@ function sleep(ms: number) {
 }
 
 class OrderService {
-  @trace({ module: 'orders', captureArgs: true, captureResult: true })
+  @trace({ name: 'orders', captureArgs: true, captureResult: true })
   async createOrder(orderId: string, span?: Span) {
+    span?.setAttribute('orderId', orderId)
     span?.console.info('creating order', orderId)
 
     const [price, stock, shipping] = await Promise.all([
@@ -262,24 +325,33 @@ class OrderService {
       this.estimateShipping(orderId, span!),
     ])
 
+    span?.setAttribute('total', price.total)
     span?.console.log('order assembled', { orderId, total: price.total })
     return { orderId, price, stock, shipping }
   }
 
-  @trace({ module: 'pricing', captureArgs: true, captureResult: true })
+  @trace({ name: 'pricing', captureArgs: true, captureResult: true })
   async calculatePrice(orderId: string, span: Span) {
+    span.setAttribute('orderId', orderId)
     await sleep(120)
-    return { orderId, subtotal: 89.99, tax: 12.35, total: 102.34 }
+    const priced = { orderId, subtotal: 89.99, tax: 12.35, total: 102.34 }
+    span.setAttribute('total', priced.total)
+    return priced
   }
 
-  @trace({ module: 'inventory', captureArgs: true, captureResult: true })
+  @trace({ name: 'inventory', captureArgs: true, captureResult: true })
   async reserveStock(orderId: string, span: Span) {
+    span.setAttribute('orderId', orderId)
+    span.setAttribute('sku', 'SKU-4421')
+    span.setAttribute('warehouse', 'US-EAST-2')
     await sleep(150)
     return { orderId, sku: 'SKU-4421', qty: 2, warehouse: 'US-EAST-2' }
   }
 
-  @trace({ module: 'shipping', captureArgs: true, captureResult: true })
+  @trace({ name: 'shipping', captureArgs: true, captureResult: true })
   async estimateShipping(orderId: string, span: Span) {
+    span.setAttribute('orderId', orderId)
+    span.setAttribute('carrier', 'fedex')
     await sleep(90)
     return { orderId, carrier: 'fedex', days: 3, cost: 9.5 }
   }
@@ -317,14 +389,17 @@ function sleep(ms: number) {
 class PaymentGateway {
   private attempts = 0
 
-  @trace({ module: 'gateway', captureArgs: true, captureResult: true })
+  @trace({ name: 'gateway', captureArgs: true, captureResult: true })
   async charge(amount: number, span: Span) {
+    span.setAttribute('amount', amount)
     return this.retryWithBackoff(() => this.callProvider(amount, span), 3, span)
   }
 
-  @trace({ module: 'gateway', captureArgs: true })
+  @trace({ name: 'gateway', captureArgs: true })
   async callProvider(amount: number, span: Span) {
     this.attempts += 1
+    span.setAttribute('amount', amount)
+    span.setAttribute('attempt', this.attempts)
     await sleep(70)
     span.console.warn('gateway attempt', this.attempts)
 
@@ -332,11 +407,14 @@ class PaymentGateway {
       throw new Error(`Gateway timeout (attempt ${this.attempts})`)
     }
 
+    const chargeId = `ch_${Date.now()}`
+    span.setAttribute('provider', 'stripe-mock')
+    span.setAttribute('chargeId', chargeId)
     span.console.info('gateway charge succeeded', { amount })
-    return { provider: 'stripe-mock', amount, chargeId: `ch_${Date.now()}` }
+    return { provider: 'stripe-mock', amount, chargeId }
   }
 
-  @trace({ module: 'gateway', captureArgs: true })
+  @trace({ name: 'gateway', captureArgs: true })
   async retryWithBackoff<T>(
     fn: () => Promise<T>,
     retries: number,
@@ -344,7 +422,10 @@ class PaymentGateway {
   ): Promise<T> {
     let lastError: unknown
 
+    span.setAttribute('retries', retries)
+
     for (let attempt = 1; attempt <= retries; attempt++) {
+      span.setAttribute('attempt', attempt)
       try {
         return await fn()
       } catch (error) {
@@ -364,10 +445,13 @@ class PaymentGateway {
 class BillingService {
   constructor(private gateway = new PaymentGateway()) {}
 
-  @trace({ module: 'billing', captureArgs: true, captureResult: true })
+  @trace({ name: 'billing', captureArgs: true, captureResult: true })
   async processInvoice(invoiceId: string, span?: Span) {
+    span?.setAttribute('invoiceId', invoiceId)
     span?.console.info('processing invoice', invoiceId)
     const charge = await this.gateway.charge(149.99, span!)
+    span?.setAttribute('status', 'paid')
+    span?.setAttribute('amount', charge.amount)
     return { invoiceId, status: 'paid', charge }
   }
 }
@@ -395,6 +479,7 @@ function sleep(ms: number) {
 
 const loadItems = traceFn(
   async (userId: string, span?: Span) => {
+    span?.setAttribute('userId', userId)
     await sleep(45)
     span?.console.log('loaded cart items', userId)
     return [
@@ -403,7 +488,6 @@ const loadItems = traceFn(
     ]
   },
   {
-    module: 'cart',
     name: 'loadItems',
     captureArgs: true,
     captureResult: true,
@@ -414,10 +498,13 @@ const applyCoupon = traceFn(
   async (items: { sku: string; price: number; qty: number }[], span?: Span) => {
     await sleep(35)
     const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0)
-    return { items, subtotal, discount: 10, total: subtotal - 10 }
+    const total = subtotal - 10
+    span?.setAttribute('itemCount', items.length)
+    span?.setAttribute('subtotal', subtotal)
+    span?.setAttribute('total', total)
+    return { items, subtotal, discount: 10, total }
   },
   {
-    module: 'cart',
     name: 'applyCoupon',
     captureArgs: true,
     captureResult: true,
@@ -426,13 +513,14 @@ const applyCoupon = traceFn(
 
 const finalizeCart = traceFn(
   async (userId: string, span?: Span) => {
+    span?.setAttribute('userId', userId)
     const items = await loadItems(userId, span)
     const priced = await applyCoupon(items, span)
+    span?.setAttribute('total', priced.total)
     span?.console.info('cart ready', { userId, total: priced.total })
     return priced
   },
   {
-    module: 'cart',
     name: 'finalizeCart',
     captureArgs: true,
     captureResult: true,
@@ -458,7 +546,9 @@ Displays the core tracing metadata and any custom tags/attributes associated wit
 
 - **Timing Metadata:** Tracks the `Start Offset` (when the span started relative to the root trace) and the `Total Duration`.
 - **Share of Trace:** The percentage of the total trace execution time spent inside this span.
-- **Custom Attributes:** Displays key-value pairs like `Module` and `Hierarchy Depth` configured via your trace decorators.
+- **Custom Attributes:** Key-value pairs from `span.setAttribute()`. Tag IDs
+  and outcomes (`orderId`, `userId`, `total`) so they show here and in Zipkin.
+  `@trace({ name })` only sets the span name.
 
 ### 2. Input Arguments & Output Results
 
@@ -515,6 +605,9 @@ pnpm build:extension
 import { trace, traceFn, type Span } from 'zentrace'
 import { enableZipkinExport } from 'zentrace/exporters/zipkin'
 import { enableLokiExport } from 'zentrace/exporters/loki'
+
+@trace({ name: 'checkout' }) // span name; defaults to the method name
+traceFn(fn, { name: 'loadItems' })
 ```
 
 ---

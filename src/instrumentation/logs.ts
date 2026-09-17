@@ -1,10 +1,10 @@
-import type { Span } from '../core/span'
-import { captureStack, parseLogArgs } from '../core/stack'
-import { emitTrace } from '../exporters/browser/browser-export'
-import { resolveSpanFromStack } from '../runtime/active-context'
-import { getCurrentSpan } from '../runtime/trace-runtime'
+import type { Span } from '../core/span.js'
+import { captureStack, parseLogArgs } from '../core/stack.js'
+import { emitTrace } from '../exporters/browser/browser-export.js'
+import { resolveSpanFromStack } from '../runtime/active-context.js'
+import { getCurrentSpan } from '../runtime/trace-runtime.js'
 
-import { recordSpanLog } from './log-record'
+import { recordSpanLog } from './log-record.js'
 
 export type ConsoleLevel = 'debug' | 'log' | 'info' | 'warn' | 'error'
 

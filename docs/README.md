@@ -40,17 +40,20 @@ import { Span, trace } from 'zentrace'
 class UserService {
   @trace()
   async getUser(id: string, span?: Span) {
+    span?.setAttribute('userId', id)
     const user = await this.fetchUser(id, span!)
     return this.validateUser(user, span!)
   }
 
   @trace()
   async fetchUser(id: string, span: Span) {
+    span.setAttribute('userId', id)
     return { id, name: 'Peter' }
   }
 
   @trace()
   async validateUser(user: { id: string; name: string }, span: Span) {
+    span.setAttribute('userId', user.id)
     if (!user) throw new Error('Invalid user')
     return user
   }
@@ -87,17 +90,21 @@ import { Span, trace } from 'zentrace'
 class CheckoutService {
   @trace()
   async checkout(userId: string, span?: Span) {
+    span?.setAttribute('userId', userId)
     const user = await this.getUser(userId, span!)
     return this.processPayment(user, span!)
   }
 
   @trace()
   async getUser(userId: string, span: Span) {
+    span.setAttribute('userId', userId)
     return { id: userId }
   }
 
   @trace()
   async processPayment(user: { id: string }, span: Span) {
+    span.setAttribute('userId', user.id)
+    span.setAttribute('paid', true)
     return { userId: user.id, paid: true }
   }
 }

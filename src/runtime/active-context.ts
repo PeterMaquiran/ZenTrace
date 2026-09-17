@@ -1,5 +1,5 @@
-import type { Span } from '../core/span'
-import { captureStack, getFunctionMarker } from '../core/stack'
+import type { Span } from '../core/span.js'
+import { captureStack, getFunctionMarker } from '../core/stack.js'
 
 import {
   getActiveSpans,
@@ -8,7 +8,7 @@ import {
   markSpan,
   popSpan,
   pushSpan,
-} from './trace-runtime'
+} from './trace-runtime.js'
 
 export function enterSpan(span: Span) {
   pushSpan(span)

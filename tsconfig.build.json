@@ -5,6 +5,10 @@
     "outDir": "dist",
     "baseUrl": ".",
     "sourceMap": true,
+    // Node ESM consumers need explicit file extensions; NodeNext makes tsc
+    // reject the extensionless specifiers that a bundler would have tolerated.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {

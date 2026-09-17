@@ -1,6 +1,6 @@
 export type ZenTraceConfig = {
-  /** Enables captureArgs/captureResult defaults for @trace(). */
-  testMode?: boolean
+  /** Default-on `captureArgs` / `captureResult` for `@trace()` and `traceFn()`. */
+  capture?: boolean
   captureArgs?: boolean
   captureResult?: boolean
   /** Spans slower than this (ms) are highlighted in the UI. */
@@ -8,7 +8,7 @@ export type ZenTraceConfig = {
 }
 
 const defaults: Required<ZenTraceConfig> = {
-  testMode: false,
+  capture: false,
   captureArgs: false,
   captureResult: false,
   slowThresholdMs: 100,
@@ -19,7 +19,7 @@ let config: Required<ZenTraceConfig> = { ...defaults }
 export function configureZenTrace(options: ZenTraceConfig = {}): void {
   const next = { ...config, ...options }
 
-  if (options.testMode) {
+  if (options.capture) {
     next.captureArgs = options.captureArgs ?? true
     next.captureResult = options.captureResult ?? true
   }

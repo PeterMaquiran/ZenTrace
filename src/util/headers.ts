@@ -1,4 +1,4 @@
-import type { TraceContext } from '../core/context'
+import type { TraceContext } from '../core/context.js'
 
 export function getTraceHeaders(ctx: TraceContext) {
   return {

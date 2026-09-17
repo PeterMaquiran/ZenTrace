@@ -3,15 +3,15 @@ export {
   LOKI_EXPORTER_ID,
   toLokiStreams,
   type LokiExporterOptions,
-} from './loki.exporter'
+} from './loki.exporter.js'
 
-import { replaceExporter, unregisterExportersById } from '../registry'
+import { replaceExporter, unregisterExportersById } from '../registry.js'
 
 import {
   LOKI_EXPORTER_ID,
   LokiExporter,
   type LokiExporterOptions,
-} from './loki.exporter'
+} from './loki.exporter.js'
 
 /** Register (or replace) a Loki exporter and return it. */
 export function enableLokiExport(

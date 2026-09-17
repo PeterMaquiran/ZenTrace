@@ -1,4 +1,4 @@
-import type { Span } from './core/span'
+import type { Span } from './core/span.js'
 
 /**
  * Pino-compatible logger methods: `(bindings, message)` or `(message)`.

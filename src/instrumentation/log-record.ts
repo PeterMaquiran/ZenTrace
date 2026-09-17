@@ -1,4 +1,4 @@
-import type { Span } from '../core/span'
+import type { Span } from '../core/span.js'
 
 export type StoredSpanLog = {
   level: string

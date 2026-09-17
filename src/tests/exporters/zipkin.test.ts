@@ -58,6 +58,27 @@ describe('ZipkinExporter', () => {
     ])
   })
 
+  it('skips auto-traced fetch spans', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const exporter = new ZipkinExporter({
+      endpoint: 'http://zipkin.test/api/v2/spans',
+    })
+
+    await exporter.export({
+      traceId: 'a'.repeat(32),
+      id: 'b'.repeat(16),
+      name: 'HTTP GET',
+      timestamp: 1,
+      duration: 1000,
+      localEndpoint: { serviceName: 'demo' },
+      tags: { component: 'http', module: 'http' },
+    })
+
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('rounds float durations to integer microseconds for Zipkin', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true })
     vi.stubGlobal('fetch', fetchMock)
@@ -149,6 +170,59 @@ describe('ZipkinExporter', () => {
         localEndpoint: { serviceName: 'demo' },
       }),
     ).rejects.toThrow('Zipkin export failed (500): server error')
+  })
+
+  it('never sends zentrace.logs or captured input/output', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await new ZipkinExporter({
+      endpoint: 'http://zipkin.test/api/v2/spans',
+    }).export({
+      traceId: 'a'.repeat(32),
+      id: 'b'.repeat(16),
+      name: 'checkout',
+      timestamp: 1,
+      duration: 1000,
+      localEndpoint: { serviceName: 'demo' },
+      tags: {
+        module: 'checkout',
+        input: JSON.stringify(['secret']),
+        output: JSON.stringify({ userId: 'user_123' }),
+        'zentrace.logs': JSON.stringify([{ message: 'hi' }]),
+      },
+    })
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string)
+    expect(body[0].tags).toEqual({ module: 'checkout' })
+  })
+
+  it('sends input/output only when set with setAttribute', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await new ZipkinExporter({
+      endpoint: 'http://zipkin.test/api/v2/spans',
+    }).export({
+      traceId: 'a'.repeat(32),
+      id: 'b'.repeat(16),
+      name: 'checkout',
+      timestamp: 1,
+      duration: 1000,
+      localEndpoint: { serviceName: 'demo' },
+      tags: {
+        input: JSON.stringify(['demo-token']),
+        output: JSON.stringify({ ok: true }),
+        orderId: 'order-1',
+      },
+      userAttributeKeys: ['input', 'orderId'],
+    })
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string)
+    expect(body[0].tags).toEqual({
+      input: JSON.stringify(['demo-token']),
+      orderId: 'order-1',
+    })
   })
 })
 

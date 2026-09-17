@@ -24,6 +24,17 @@ describe('http tracing', () => {
     vi.unstubAllGlobals()
   })
 
+  it('patches fetch when a span starts', async () => {
+    await runSpan('parent', async () => {
+      await globalThis.fetch('https://example.com/api')
+    })
+
+    expect(nativeFetch).toHaveBeenCalledTimes(1)
+    expect(
+      SpanStorage.getAll().filter((span) => span.name.startsWith('HTTP')),
+    ).toHaveLength(1)
+  })
+
   it('does not recurse when global fetch is patched', async () => {
     installHttpTracing()
     nativeFetch.mockClear()

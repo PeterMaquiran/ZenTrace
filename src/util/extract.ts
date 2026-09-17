@@ -1,4 +1,4 @@
-import { TraceContext } from '../core/context'
+import { TraceContext } from '../core/context.js'
 
 export function extract(headers: any) {
   // @typescript-eslint/no-explicit-any

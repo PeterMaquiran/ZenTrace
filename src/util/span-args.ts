@@ -1,5 +1,5 @@
-import { Span } from '../core/span'
-import type { Span as SpanType } from '../core/span'
+import { Span } from '../core/span.js'
+import type { Span as SpanType } from '../core/span.js'
 
 export function isSpan(value: unknown): value is SpanType {
   return value instanceof Span

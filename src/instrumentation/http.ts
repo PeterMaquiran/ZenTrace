@@ -1,8 +1,9 @@
-import type { Span } from '../core/span'
-import { runSpan } from '../runtime/run-span'
-import { extractParentSpanFromHeaders } from '../runtime/trace-runtime'
-import { inject } from '../util/inject'
+import type { Span } from '../core/span.js'
+import { runSpan } from '../runtime/run-span.js'
+import { extractParentSpanFromHeaders } from '../runtime/trace-runtime.js'
+import { inject } from '../util/inject.js'
 
+import { registerHttpTracingEnsure } from './http-auto.js'
 
 type HttpTraceOptions = {
   serviceName?: string
@@ -148,6 +149,14 @@ export function installHttpTracing(options: HttpTraceOptions = {}) {
 
   getHttpTracingState().installed = true
 }
+
+/** Patches `fetch` on first span so HTTP shows in the dashboard. */
+export function ensureHttpTracing() {
+  if (getHttpTracingState().installed) return
+  installHttpTracing()
+}
+
+registerHttpTracingEnsure(ensureHttpTracing)
 
 export function uninstallHttpTracing() {
   const state = getHttpTracingState()

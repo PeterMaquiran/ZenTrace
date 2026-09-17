@@ -6,10 +6,10 @@ export {
   getTraceSession,
   setTraceSession,
   type TraceSession,
-} from './session'
+} from './session.js'
 export {
   configureZenTrace,
   getZenTraceConfig,
   resetZenTraceConfig,
   type ZenTraceConfig,
-} from './configure'
+} from './configure.js'

@@ -1,4 +1,4 @@
-import type { Span } from '../core/span'
+import type { Span } from '../core/span.js'
 
 const RUNTIME_KEY = '__ZENTRACE_RUNTIME__'
 

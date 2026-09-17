@@ -5,15 +5,14 @@ import { installLogCapture, uninstallLogCapture } from '@/instrumentation/logs'
 import { trace } from '@/runtime/decorator/decorator'
 import { SpanStorage } from '@/storage/memory-storage'
 
-
 class LogService {
-  @trace({ module: 'logs' })
+  @trace({ name: 'logs' })
   async run(message: string) {
     console.log(message)
     return message
   }
 
-  @trace({ module: 'logs' })
+  @trace({ name: 'logs' })
   async nested(message: string) {
     return this.run(message)
   }
@@ -56,7 +55,7 @@ describe('log capture', () => {
 
   it('span.console keeps logs on the target span during parallel traces', async () => {
     class OrderService {
-      @trace({ module: 'orders' })
+      @trace({ name: 'orders' })
       async createOrder(orderId: string, span?: Span) {
         span?.console.info('creating order', orderId)
 
@@ -69,14 +68,14 @@ describe('log capture', () => {
         return orderId
       }
 
-      @trace({ module: 'inventory' })
+      @trace({ name: 'inventory' })
       async reserveStock(orderId: string, span: Span) {
         void orderId
         void span
         await new Promise((resolve) => setTimeout(resolve, 30))
       }
 
-      @trace({ module: 'shipping' })
+      @trace({ name: 'shipping' })
       async estimateShipping(orderId: string, span: Span) {
         void orderId
         void span
@@ -115,7 +114,7 @@ describe('log capture', () => {
 
   it('captures logs that happen after an await', async () => {
     class DelayedLogService {
-      @trace({ module: 'logs' })
+      @trace({ name: 'logs' })
       async run(message: string) {
         await new Promise((resolve) => setTimeout(resolve, 5))
         console.info(message)

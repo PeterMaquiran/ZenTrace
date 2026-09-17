@@ -2,15 +2,15 @@ export {
   ZipkinExporter,
   ZIPKIN_EXPORTER_ID,
   type ZipkinExporterOptions,
-} from './zipkin.exporter'
+} from './zipkin.exporter.js'
 
-import { replaceExporter, unregisterExportersById } from '../registry'
+import { replaceExporter, unregisterExportersById } from '../registry.js'
 
 import {
   ZIPKIN_EXPORTER_ID,
   ZipkinExporter,
   type ZipkinExporterOptions,
-} from './zipkin.exporter'
+} from './zipkin.exporter.js'
 
 /** Register (or replace) a Zipkin exporter and return it. */
 export function enableZipkinExport(

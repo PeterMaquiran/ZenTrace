@@ -1,4 +1,4 @@
-import type { SpanData } from '../../core/types'
+import type { SpanData } from '../../core/types.js'
 
 export function emitTrace(data: SpanData) {
   window.postMessage(

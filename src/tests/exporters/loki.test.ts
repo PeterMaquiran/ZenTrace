@@ -71,6 +71,46 @@ describe('LokiExporter', () => {
     })
   })
 
+  it('nests dynamic payload under fields when nestFields is on', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await new LokiExporter({ nestFields: true }).export(span)
+
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(JSON.parse(payload.streams[0].values[0][1])).toEqual({
+      timestamp: '2023-11-14T22:13:20.123Z',
+      level: 'info',
+      message: 'payment accepted',
+      trace_id: span.traceId,
+      span_id: span.id,
+      parent_span_id: span.parentId,
+      span_name: 'checkout',
+      fields: { orderId: 'order-1', total: 113 },
+    })
+    expect(JSON.parse(payload.streams[1].values[0][1])).not.toHaveProperty(
+      'fields',
+    )
+  })
+
+  it('maps console.log to Loki info', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await new LokiExporter().export({
+      ...span,
+      tags: {
+        'zentrace.logs': JSON.stringify([
+          { level: 'log', message: 'checkout started', ts: 1_700_000_000_123 },
+        ]),
+      },
+    })
+
+    const payload = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(payload.streams[0].stream.level).toBe('info')
+    expect(JSON.parse(payload.streams[0].values[0][1]).level).toBe('info')
+  })
+
   it('sends captureArgs/captureResult as structured input/output fields', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true })
     vi.stubGlobal('fetch', fetchMock)

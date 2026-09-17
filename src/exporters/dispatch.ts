@@ -1,8 +1,8 @@
-import type { SpanData } from '../core/types'
-import { writeStructuredLog } from '../logger'
+import type { SpanData } from '../core/types.js'
+import { writeStructuredLog } from '../logger.js'
 
-import { emitTrace } from './browser/browser-export'
-import { getExporters } from './registry'
+import { emitTrace } from './browser/browser-export.js'
+import { getExporters } from './registry.js'
 
 export function dispatchSpan(data: SpanData): void {
   const span = normalizeSpanData(data)

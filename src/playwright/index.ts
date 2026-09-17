@@ -1,4 +1,4 @@
-import { createTraceSession, type TraceSession } from '../testing/session'
+import { createTraceSession, type TraceSession } from '../testing/session.js'
 
 export type ZenTraceTestInfo = {
   title: string

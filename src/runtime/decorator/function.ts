@@ -1,23 +1,21 @@
-import type { Span as SpanType } from '../../core/span'
-import { getZenTraceConfig } from '../../testing/configure'
+import type { Span as SpanType } from '../../core/span.js'
+import { getZenTraceConfig } from '../../testing/configure.js'
 import {
   isSpan,
   receivesSpanParam,
   resolveManualPropagation,
-} from '../../util/span-args'
-import { runSpan, runSpanSync } from '../run-span'
+} from '../../util/span-args.js'
+import { runSpan, runSpanSync } from '../run-span.js'
 
-import type { TraceOptions } from './decorator'
+import type { TraceOptions } from './decorator.js'
 
 type TraceFnOptions<TSpan extends boolean | undefined = false> =
   TraceOptions & {
-    name?: string
     marker?: string
     span?: TSpan
   }
 
 type TraceFnRuntimeOptions = TraceOptions & {
-  name?: string
   marker?: string
   span?: boolean
 }

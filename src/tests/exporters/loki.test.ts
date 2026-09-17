@@ -66,8 +66,8 @@ describe('LokiExporter', () => {
       total: 113,
       trace_id: span.traceId,
       span_id: span.id,
-      parentSpanId: span.parentId,
-      spanName: 'checkout',
+      parent_span_id: span.parentId,
+      span_name: 'checkout',
     })
   })
 
@@ -103,7 +103,7 @@ describe('LokiExporter', () => {
       module: 'auth',
       trace_id: span.traceId,
       span_id: span.id,
-      spanName: 'checkout',
+      span_name: 'checkout',
     })
   })
 
@@ -130,5 +130,29 @@ describe('LokiExporter', () => {
     await expect(new LokiExporter().export(span)).rejects.toThrow(
       'Loki export failed (401): unauthorized',
     )
+  })
+})
+
+describe('enableLokiExport', () => {
+  afterEach(async () => {
+    const { clearExporters } = await import('../../exporters/registry')
+    clearExporters()
+  })
+
+  it('registers a Loki exporter and replaces an existing one', async () => {
+    const { getExporters } = await import('../../exporters/registry')
+    const { enableLokiExport, disableLokiExport } =
+      await import('../../exporters/loki')
+
+    enableLokiExport({ endpoint: 'http://a/loki/api/v1/push' })
+    const second = enableLokiExport({
+      endpoint: 'http://b/loki/api/v1/push',
+    })
+
+    expect(getExporters().size).toBe(1)
+    expect([...getExporters()][0]).toBe(second)
+
+    disableLokiExport()
+    expect(getExporters().size).toBe(0)
   })
 })

@@ -23,7 +23,7 @@ Decorate your functions with `@trace()`. Run your app. Open the **ZenTrace** pan
 npm install zentrace
 ```
 
-## Structured logging and Loki
+## Structured logging
 
 `setLogger` routes `span.console.*` through Pino, Winston, or another structured
 logger using Pino's `(bindings, message)` call shape. Object arguments stay as
@@ -72,31 +72,54 @@ setLogger({
 })
 ```
 
-Send captured span logs directly to Loki with the built-in exporter:
+## Export to Zipkin and Loki
+
+Call these once at process startup — typically next to `configureZenTrace()`
+and `enableAutoTracing()`. [examples/checkout.ts](examples/checkout.ts) shows
+the full setup.
 
 ```ts
+import { enableZipkinExport } from 'zentrace/exporters/zipkin'
 import { enableLokiExport } from 'zentrace/exporters/loki'
+
+enableZipkinExport({
+  endpoint: 'http://localhost:9411/api/v2/spans',
+  serviceName: 'checkout-api',
+})
 
 enableLokiExport({
   endpoint: 'http://localhost:3100/loki/api/v1/push',
+  serviceName: 'checkout-api',
   labels: { environment: 'development' },
-  // tenantId: process.env.LOKI_TENANT_ID,
-  // authToken: `Bearer ${process.env.LOKI_TOKEN}`,
 })
 ```
 
-Loki log lines contain OpenTelemetry-style `trace_id` / `span_id` fields.
-Configure a Grafana Loki derived field for `trace_id` that links to your Zipkin
-data source. Trace IDs are intentionally not Loki labels because that would
-create a high-cardinality stream per trace.
+Defaults are local Zipkin (`9411`) and Loki (`3100`) if you omit `endpoint`.
+A second call with the same exporter **replaces** the previous one. Use
+`disableZipkinExport()` / `disableLokiExport()` to stop sending.
 
-When `@trace({ captureArgs: true, captureResult: true })` is enabled, each
-finished span also pushes a structured line with parsed `input` / `output`
-fields (plus `event: "span"`), even if the span had no `console` logs.
+| Option        | Zipkin | Loki | Notes                                                            |
+| ------------- | ------ | ---- | ---------------------------------------------------------------- |
+| `endpoint`    | ✓      | ✓    | HTTP POST destination                                            |
+| `serviceName` | ✓      | ✓    | Zipkin `localEndpoint`; Loki `service_name` label                |
+| `authToken`   | ✓      | ✓    | Full `Authorization` value, e.g. `Bearer ${process.env.TOKEN}`   |
+| `headers`     | ✓      | ✓    | Extra request headers                                            |
+| `labels`      |        | ✓    | Low-cardinality stream labels only (`environment`, `cluster`, …) |
+| `tenantId`    |        | ✓    | Grafana Cloud / multi-tenant Loki (`X-Scope-OrgID`)              |
+
+Zipkin receives one v2 span per finished function. Loki receives `span.console.*`
+lines plus, when `captureArgs` / `captureResult` are on, a structured
+`event: "span"` line with parsed `input` / `output`.
+
+Log JSON uses OpenTelemetry-style `trace_id`, `span_id`, `parent_span_id`, and
+`span_name`. Configure a Grafana Loki derived field on `trace_id` that links
+to your Zipkin data source. Do not put trace IDs in Loki `labels` — that
+creates a high-cardinality stream per trace.
 
 ## Example: checkout flow
 
 Copy [examples/checkout.ts](examples/checkout.ts) → call `runCheckoutExample()`.
+The file also enables Zipkin + Loki export (see above).
 
 ```ts
 import { Span, trace } from 'zentrace'
@@ -490,6 +513,8 @@ pnpm build:extension
 
 ```ts
 import { trace, traceFn, type Span } from 'zentrace'
+import { enableZipkinExport } from 'zentrace/exporters/zipkin'
+import { enableLokiExport } from 'zentrace/exporters/loki'
 ```
 
 ---

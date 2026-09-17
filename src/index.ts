@@ -15,6 +15,7 @@ export { emitTrace } from './exporters/browser/browser-export'
 export {
   registerExporter,
   unregisterExporter,
+  unregisterExportersById,
   clearExporters,
   getExporters,
   replaceExporter,

@@ -4,14 +4,17 @@ import { readStoredLogs } from '../../instrumentation/log-record'
 import type { Exporter } from '../base'
 
 export type LokiExporterOptions = {
-  /** Loki push endpoint. Defaults to http://localhost:3100/loki/api/v1/push. */
+  /** Loki push endpoint. Defaults to `http://localhost:3100/loki/api/v1/push`. */
   endpoint?: string
+  /** Full `Authorization` header value, e.g. `Bearer <token>`. */
   authToken?: string
-  /** Grafana Cloud and multi-tenant Loki tenant ID. */
+  /** Grafana Cloud / multi-tenant Loki tenant (`X-Scope-OrgID`). */
   tenantId?: string
+  /** Overrides the `service_name` stream label (default Tracer name). */
   serviceName?: string
-  /** Extra low-cardinality stream labels. Trace IDs should not be labels. */
+  /** Extra low-cardinality stream labels. Do not put trace IDs here. */
   labels?: Record<string, string>
+  /** Extra request headers (merged after Content-Type / Authorization / tenant). */
   headers?: Record<string, string>
 }
 
@@ -105,8 +108,8 @@ export function toLokiStreams(
         message: line.message,
         trace_id: span.traceId,
         span_id: span.id,
-        ...(span.parentId ? { parentSpanId: span.parentId } : {}),
-        spanName: span.name,
+        ...(span.parentId ? { parent_span_id: span.parentId } : {}),
+        span_name: span.name,
       }),
     ])
   }

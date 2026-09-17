@@ -183,3 +183,23 @@ describe('exporter registry', () => {
     expect([...getExporters()][0]).toBe(second)
   })
 })
+
+describe('enableZipkinExport', () => {
+  afterEach(() => {
+    clearExporters()
+  })
+
+  it('registers a Zipkin exporter and replaces an existing one', async () => {
+    const { enableZipkinExport, disableZipkinExport } =
+      await import('../../exporters/zipkin')
+
+    enableZipkinExport({ endpoint: 'http://a/api/v2/spans' })
+    const second = enableZipkinExport({ endpoint: 'http://b/api/v2/spans' })
+
+    expect(getExporters().size).toBe(1)
+    expect([...getExporters()][0]).toBe(second)
+
+    disableZipkinExport()
+    expect(getExporters().size).toBe(0)
+  })
+})

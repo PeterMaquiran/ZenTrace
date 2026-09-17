@@ -3,10 +3,13 @@ import { getUntracedFetch } from '../../instrumentation/http'
 import type { Exporter } from '../base'
 
 export type ZipkinExporterOptions = {
-  /** Zipkin v2 spans endpoint. Defaults to http://localhost:9411/api/v2/spans */
+  /** Zipkin v2 spans endpoint. Defaults to `http://localhost:9411/api/v2/spans`. */
   endpoint?: string
+  /** Full `Authorization` header value, e.g. `Bearer <token>`. */
   authToken?: string
-  /** Overrides span localEndpoint.serviceName (default Tracer name, e.g. "zentrace"). */
+  /** Extra request headers (merged after Content-Type / Authorization). */
+  headers?: Record<string, string>
+  /** Overrides span `localEndpoint.serviceName` (default Tracer name). */
   serviceName?: string
 }
 
@@ -19,11 +22,13 @@ export class ZipkinExporter implements Exporter {
 
   private readonly endpoint: string
   private readonly authToken?: string
+  private readonly headers?: Record<string, string>
   private readonly serviceName?: string
 
   constructor(options: ZipkinExporterOptions = {}) {
     this.endpoint = options.endpoint ?? DEFAULT_ENDPOINT
     this.authToken = options.authToken
+    this.headers = options.headers
     this.serviceName = options.serviceName
   }
 
@@ -36,6 +41,7 @@ export class ZipkinExporter implements Exporter {
       headers: {
         'Content-Type': 'application/json',
         ...(this.authToken ? { Authorization: this.authToken } : {}),
+        ...this.headers,
       },
       body,
     })

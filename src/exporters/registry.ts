@@ -26,6 +26,16 @@ export function unregisterExporter(exporter: Exporter): void {
   getState().exporters.delete(exporter)
 }
 
+/** Drop every exporter that reports the given `exporterId`. */
+export function unregisterExportersById(exporterId: string): void {
+  const { exporters } = getState()
+  for (const existing of [...exporters]) {
+    if ((existing as { exporterId?: string }).exporterId === exporterId) {
+      exporters.delete(existing)
+    }
+  }
+}
+
 export function getExporters(): ReadonlySet<Exporter> {
   return getState().exporters
 }

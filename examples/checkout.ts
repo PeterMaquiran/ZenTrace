@@ -12,7 +12,6 @@ enableLokiExport({
   endpoint: 'http://localhost:3100/loki/api/v1/push',
   serviceName: 'zentrace-demo',
   labels: { environment: 'development' },
-  authToken: 'Basic bG9raTp0YWJ0ZXN0ZUAwMDY=',
   nestFields: true,
 })
 

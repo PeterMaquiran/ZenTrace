@@ -1,4 +1,6 @@
-import { Span, trace } from 'zentrace'
+import { configureZenTrace, Span, trace } from 'zentrace'
+
+configureZenTrace({ capture: true })
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))

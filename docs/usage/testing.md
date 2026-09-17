@@ -1,59 +1,19 @@
-# Testing Guide
+# Testing
 
-Replica ORM is validated entirely through tests.
+ZenTrace uses Vitest for the library and Playwright for the DevTools extension.
 
-> If tests pass, the feature works.
-
----
-
-## 🧪 Test types
-
-### Unit tests
-
-Run logic-level tests:
-
-```bash id="t2"
-pnpm test:unit
+```bash
+pnpm test:package      # unit tests
+pnpm test:extension    # extension + panel (needs Chrome)
 ```
 
----
+CI runs both (see `.github/workflows/ci.yml`).
 
-### E2E tests (Cypress)
+| Change                                         | Tests to update |
+| ---------------------------------------------- | --------------- |
+| Spans, decorators, exporters, HTTP/log capture | Vitest          |
+| DevTools panel or Chrome extension             | Playwright      |
+| Docs only                                      | None            |
 
-Run full browser validation:
-
-```bash id="t3"
-pnpm test:e2e
-```
-
----
-
-## 🔁 Development loop
-
-Recommended workflow:
-
-1. Write or update a test
-2. Implement feature
-3. Run Cypress
-4. Refresh test
-5. Repeat until green
-
----
-
-## 🚨 Rule
-
-- No feature is complete without a passing test
-- UI is not a source of truth
-- Logs are not a source of truth
-
-Only tests define correctness.
-
----
-
-## 🧠 Philosophy
-
-Replica ORM is built in a **test-driven environment**:
-
-> behavior is defined before implementation
-
----
+Playwright tests that load the extension need a headed browser. See
+[playwright.md](./playwright.md) for `attachZenTrace` in your own suite.

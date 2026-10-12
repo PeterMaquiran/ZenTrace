@@ -1,5 +1,8 @@
 # ZenTrace docs
 
+ZenTrace turns the path behind a stack trace into one view: function calls,
+async flow, and the logs and HTTP calls correlated to each step.
+
 Start with the [root README](../README.md) for install, `@trace()`, `traceFn()`,
 the Chrome extension, and optional Zipkin / Loki export.
 

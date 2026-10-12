@@ -1,26 +1,22 @@
 # ZenTrace
 
-Trace function calls, async flow, logs, and HTTP — see it in Chrome DevTools.
+A stack trace shows where the code crashed. ZenTrace shows the path that got
+there: which functions ran, how the async flow moved, and the logs and HTTP
+calls that belonged to each step — in Chrome DevTools.
 
 [npm version](https://www.npmjs.com/package/zentrace)
 
-## The problem
+Mark class methods with `@trace()` or wrap plain functions with `traceFn()`.
+ZenTrace records those calls as a span tree and correlates `console.*` and
+`fetch` onto the span that was running. Open the **ZenTrace** panel to
+inspect the whole path in one place.
 
-Async JavaScript is hard to debug. A bug in `checkout()` might come from
-`validateUser()`, a slow `fetch`, or a `console.log` three layers deep — but
-the stack trace only shows where it crashed, not how data got there.
-
-## What you get
-
-Decorate class methods with `@trace()`, wrap plain functions with `traceFn()`,
-run the app, open the **ZenTrace** panel in Chrome DevTools.
-
-|                 |                                               |
-| --------------- | --------------------------------------------- |
-| **Span tree**   | which function called which                   |
-| **Timeline**    | how long each step took                       |
-| **Inspector**   | arguments, return values, `setAttribute` tags |
-| **Logs + HTTP** | `console.*` and `fetch` linked to spans       |
+|                 |                                                          |
+| --------------- | -------------------------------------------------------- |
+| **Span tree**   | which function called which                              |
+| **Timeline**    | how long each async step took                            |
+| **Inspector**   | arguments, return values, and `setAttribute` tags        |
+| **Logs + HTTP** | `console.*` and `fetch` linked to the span that ran them |
 
 ```bash
 npm install zentrace
